@@ -49,6 +49,28 @@ class AdminService {
             return yield this.userRepository.findAllUsers();
         });
     }
+    getAdminDashboard() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const totalUsers = yield this.userRepository.countUser();
+            const sessions = yield this.getAllSessions();
+            const completed = sessions === null || sessions === void 0 ? void 0 : sessions.filter((s) => s.status === "COMPLETED").length;
+            const canceled = sessions === null || sessions === void 0 ? void 0 : sessions.filter((s) => s.status === "CANCELED").length;
+            const transactions = yield this.transactionRepository.getAllTransactions();
+            const tradingVolume = transactions.reduce((acc, tx) => acc + tx.price * tx.quantity, 0);
+            const totalProfitLoss = transactions.reduce((acc, tx) => {
+                return tx.type === "SELL" ? acc + tx.price * tx.quantity : acc;
+            }, 0);
+            const feeCollection = yield this.transactionRepository.getFeeCollectionSummary();
+            return {
+                totalUsers,
+                completed,
+                canceled,
+                tradingVolume,
+                totalProfitLoss,
+                feeCollection,
+            };
+        });
+    }
     // Disable or Enable User
     toggleUserBlockStatus(userId, token) {
         return __awaiter(this, void 0, void 0, function* () {

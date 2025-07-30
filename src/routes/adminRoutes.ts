@@ -10,7 +10,7 @@ import { transactionRepository } from "../repositories/transactionRepository";
 import { PromotionRepository } from "../repositories/promotionRepository";
 import { sessionRepository } from "../repositories/sessionRepository";
 import orderModel from "../models/orderModel";
-import { IOrder } from "../interfaces/modelInterface";
+import { IOrder } from "../models/interfaces/orderInterface";
 import { Model } from "mongoose";
 const userRepository = new UserRepository();
 const LimitRepository = new limitRepository();
@@ -33,6 +33,11 @@ const adminController = new AdminController(
 const router: Router = express.Router();
 
 router.post("/adminLogin", adminController.login);
+router.get(
+  "/adminHome",
+  verifyTokenWithRole("admin"),
+  adminController.getDashboardSummary
+);
 router.get(
   "/userList",
   verifyTokenWithRole("admin"),

@@ -5,7 +5,7 @@ import Stock from "../models/stockModel";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ResponseModel } from "../interfaces/Interfaces";
 import { HttpStatusCode } from "../interfaces/Interfaces";
-import { IUserController } from "../interfaces/controllerInterfaces";
+import { IUserController } from "./interfaces/userControllerInterface";
 import multer from "multer";
 import AWS from "aws-sdk";
 import sendResponse from "../helper/helper";

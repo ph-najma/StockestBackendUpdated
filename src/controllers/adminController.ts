@@ -5,7 +5,7 @@ import transactionModel from "../models/transactionModel";
 import { ILimitOrderQuery } from "../interfaces/Interfaces";
 import mongoose from "mongoose";
 import { HttpStatusCode } from "../interfaces/Interfaces";
-import { IAdminController } from "../interfaces/controllerInterfaces";
+import { IAdminController } from "./interfaces/adminControllerInterface";
 import sendResponse from "../helper/helper";
 import { MESSAGES } from "../helper/Message";
 
@@ -586,6 +586,24 @@ export class AdminController implements IAdminController {
         MESSAGES.SESSION_CANCELLED,
         updatedSession
       );
+    } catch (error: any) {
+      sendResponse(
+        res,
+        HttpStatusCode.BAD_REQUEST,
+        false,
+        error.message,
+        null,
+        error
+      );
+    }
+  };
+  public getDashboardSummary = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const summary = await this.adminService.getAdminDashboard();
+      sendResponse(res, HttpStatusCode.OK, true, MESSAGES.SUMMARY, summary);
     } catch (error: any) {
       sendResponse(
         res,

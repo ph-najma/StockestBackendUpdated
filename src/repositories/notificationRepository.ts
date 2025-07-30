@@ -1,6 +1,6 @@
 import notificationModel from "../models/notificationModel";
 import { INotification } from "../interfaces/modelInterface";
-import { INotificationRepository } from "../interfaces/repositoryInterface";
+import { INotificationRepository } from "./interfaces/notificationRepoInterface";
 
 export class NotificationRepository implements INotificationRepository {
   async getNotifications(

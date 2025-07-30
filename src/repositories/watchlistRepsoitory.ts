@@ -1,7 +1,7 @@
 import Watchlist from "../models/watchlistModel";
-import { IWatchlist } from "../interfaces/modelInterface";
+import { IWatchlist } from "../models/interfaces/watchlistInterface";
 import Stock from "../models/stockModel";
-import { IWatchlistRepository } from "../interfaces/repositoryInterface";
+import { IWatchlistRepository } from "./interfaces/watchlistRepoInterface";
 export class watchlistRepostory implements IWatchlistRepository {
   async getByUserId(userId: string | undefined): Promise<any> {
     if (!userId) {
@@ -16,7 +16,7 @@ export class watchlistRepostory implements IWatchlistRepository {
     }
 
     const uniqueStockSymbols = [
-      ...new Set(watchlist.stocks.map((stock) => stock.symbol)),
+      ...new Set(watchlist.stocks.map((stock: any) => stock.symbol)),
     ];
     const stockDataPromises = uniqueStockSymbols.map((symbol) =>
       Stock.findOne({ symbol })
@@ -29,7 +29,7 @@ export class watchlistRepostory implements IWatchlistRepository {
 
     const enrichedWatchlist = {
       ...watchlist.toObject(),
-      stocks: stockData.filter((data) => data),
+      stocks: stockData.filter((data: any) => data),
     };
 
     return enrichedWatchlist;
@@ -47,7 +47,7 @@ export class watchlistRepostory implements IWatchlistRepository {
 
     if (watchlist) {
       const stockExists = watchlist.stocks.some(
-        (stock) => stock.symbol === stockSymbol
+        (stock: any) => stock.symbol === stockSymbol
       );
 
       if (!stockExists) {

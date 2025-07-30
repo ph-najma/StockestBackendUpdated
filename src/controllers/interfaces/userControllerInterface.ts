@@ -1,0 +1,31 @@
+import { Request, Response } from "express";
+export interface IUserController {
+  signup(req: Request, res: Response): Promise<void>;
+  verifyOtp(req: Request, res: Response): Promise<void>;
+  resendOtp(req: Request, res: Response): Promise<void>;
+  login(req: Request, res: Response): Promise<void>;
+  forgotPassword(req: Request, res: Response): Promise<void>;
+  resetPassword(req: Request, res: Response): Promise<void>;
+  getStockList(req: Request, res: Response): Promise<void>;
+  getUserProfile(req: Request, res: Response): Promise<void>;
+  getUserportfolio(req: Request, res: Response): Promise<void>;
+  placeOrder(req: Request, res: Response): Promise<void>;
+  getWatchlist(req: Request, res: Response): Promise<void>;
+  getTransaction(req: Request, res: Response): Promise<void>;
+  updatePortfolioAfterSell(req: Request, res: Response): Promise<void>;
+  ensureWatchlistAndAddStock(req: Request, res: Response): Promise<void>;
+  getStockData(req: Request, res: Response): Promise<void>;
+  getHistorical(req: Request, res: Response): Promise<void>;
+  getOrders(req: Request, res: Response): Promise<void>;
+  getPromotions(req: Request, res: Response): Promise<void>;
+  getTradeDiary(req: Request, res: Response): Promise<void>;
+  getActiveSessions(req: Request, res: Response): Promise<void>;
+  getPurchased(req: Request, res: Response): Promise<void>;
+  getAssigned(req: Request, res: Response): Promise<void>;
+  getBySearch(req: Request, res: Response): Promise<void>;
+  generate(req: Request, res: Response): Promise<void>;
+  refreshToken(req: Request, res: Response): Promise<void>;
+  saveProfile(req: Request, res: Response): Promise<void>;
+  getSignedUrl(req: Request, res: Response): Promise<void>;
+  getNotifications(req: Request, res: Response): Promise<void>;
+}

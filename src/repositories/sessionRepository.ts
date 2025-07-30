@@ -1,6 +1,6 @@
 import session from "../models/sessionModel";
-import { ISession } from "../interfaces/modelInterface";
-import { ISessionRepository } from "../interfaces/repositoryInterface";
+import { ISession } from "../models/interfaces/sessionInterface";
+import { ISessionRepository } from "./interfaces/sessionRepoInterface";
 
 export class sessionRepository implements ISessionRepository {
   public async createSession(sessionData: ISession): Promise<ISession> {

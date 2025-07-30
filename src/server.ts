@@ -24,7 +24,6 @@ const promotionRepository = new PromotionRepository();
 const watchlistRepository = new watchlistRepostory();
 const sessionRepsoitory = new sessionRepository();
 const notificationRepository = new NotificationRepository();
-
 const stockrepository = new StockRepository();
 const server = http.createServer(app);
 

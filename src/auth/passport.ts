@@ -5,7 +5,7 @@ import {
 } from "passport-google-oauth20";
 import dotenv from "dotenv";
 import { AuthService } from "./authService";
-import { IUser } from "../interfaces/modelInterface";
+import { IUser } from "../models/interfaces/userInterface";
 
 dotenv.config();
 

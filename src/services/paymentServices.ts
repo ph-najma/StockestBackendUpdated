@@ -1,9 +1,9 @@
-import { ISession } from "../interfaces/modelInterface";
+import { ISession } from "../models/interfaces/sessionInterface";
 import { IPaymentService } from "../interfaces/serviceInterface";
-import { IPaymentRepository } from "../interfaces/repositoryInterface";
-import { IuserRepsitory } from "../interfaces/repositoryInterface";
-import { ISessionRepository } from "../interfaces/repositoryInterface";
 
+import { IuserRepsitory } from "../repositories/interfaces/userRepoInterface";
+import { ISessionRepository } from "../repositories/interfaces/sessionRepoInterface";
+import { IPaymentRepository } from "../repositories/interfaces/paymentRepo";
 export class PaymentService implements IPaymentService {
   private paymentRepository: IPaymentRepository;
   private userRepository: IuserRepsitory;

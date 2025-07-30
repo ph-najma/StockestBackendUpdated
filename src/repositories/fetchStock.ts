@@ -1,7 +1,7 @@
 import axios from "axios";
 import Stock from "../models/stockModel";
 import { client } from "../config/redis";
-import { IStock } from "../interfaces/modelInterface";
+import { IStock } from "../models/interfaces/stockInterface";
 
 export class fetchStockRepository {
   private cacheExpiry = 60 * 5;

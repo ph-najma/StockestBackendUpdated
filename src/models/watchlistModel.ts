@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
-import { IWatchlist } from "../interfaces/modelInterface";
+
+import { IWatchlist } from "./interfaces/watchlistInterface";
 
 // Define an interface for the Watchlist document
 

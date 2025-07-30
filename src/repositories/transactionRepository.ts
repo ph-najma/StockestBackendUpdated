@@ -1,7 +1,9 @@
 import transactionModel from "../models/transactionModel";
 import { ITradeDiary } from "../interfaces/Interfaces";
-import { ITransaction, IStock, IOrder } from "../interfaces/modelInterface";
-import { ITransactionRepository } from "../interfaces/repositoryInterface";
+import { ITransaction } from "../models/interfaces/transactionInterface";
+import { IStock } from "../models/interfaces/stockInterface";
+import { IOrder } from "../models/interfaces/orderInterface";
+import { ITransactionRepository } from "./interfaces/transactionRepoInterface";
 export class transactionRepository implements ITransactionRepository {
   async getTransactions(
     userId: string | undefined,

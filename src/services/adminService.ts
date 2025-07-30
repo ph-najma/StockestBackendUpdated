@@ -3,23 +3,20 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { ILimitOrderQuery } from "../interfaces/Interfaces";
 import { IAdminService } from "../interfaces/serviceInterface";
-import {
-  IUser,
-  ITransaction,
-  IStock,
-  ISession,
-  IOrder,
-  ILimit,
-} from "../interfaces/modelInterface";
-import {
-  ITransactionRepository,
-  IStockRepository,
-  ISessionRepository,
-  IpromotionRepsoitory,
-  IOrderRepository,
-  ILimitRepository,
-  IuserRepsitory,
-} from "../interfaces/repositoryInterface";
+import { ILimit } from "../interfaces/modelInterface";
+import { IUser } from "../models/interfaces/userInterface";
+import { ITransaction } from "../models/interfaces/transactionInterface";
+import { IStock } from "../models/interfaces/stockInterface";
+import { ISession } from "../models/interfaces/sessionInterface";
+import { IOrder } from "../models/interfaces/orderInterface";
+import { ITransactionRepository } from "../repositories/interfaces/transactionRepoInterface";
+import { IStockRepository } from "../repositories/interfaces/stockRepoInterface";
+import { ISessionRepository } from "../repositories/interfaces/sessionRepoInterface";
+import { IpromotionRepsoitory } from "../repositories/interfaces/promotionRepoInterface";
+import { IOrderRepository } from "../repositories/interfaces/orderRepoInsterface";
+import { ILimitRepository } from "../repositories/interfaces/baseRepoInterface";
+import { IuserRepsitory } from "../repositories/interfaces/userRepoInterface";
+import { IAdminDashboardSummary } from "../interfaces/Interfaces";
 dotenv.config();
 
 const tokenBlacklist = new Set<string>();
@@ -77,6 +74,32 @@ export class AdminService implements IAdminService {
   // Get User List
   async getUserList(): Promise<IUser[]> {
     return await this.userRepository.findAllUsers();
+  }
+
+  async getAdminDashboard(): Promise<IAdminDashboardSummary> {
+    const totalUsers = await this.userRepository.countUser();
+    const sessions = await this.getAllSessions();
+    const completed = sessions?.filter((s) => s.status === "COMPLETED").length;
+    const canceled = sessions?.filter((s) => s.status === "CANCELED").length;
+
+    const transactions = await this.transactionRepository.getAllTransactions();
+    const tradingVolume = transactions.reduce(
+      (acc, tx) => acc + tx.price * tx.quantity,
+      0
+    );
+    const totalProfitLoss = transactions.reduce((acc, tx) => {
+      return tx.type === "SELL" ? acc + tx.price * tx.quantity : acc;
+    }, 0);
+    const feeCollection =
+      await this.transactionRepository.getFeeCollectionSummary();
+    return {
+      totalUsers,
+      completed,
+      canceled,
+      tradingVolume,
+      totalProfitLoss,
+      feeCollection,
+    };
   }
 
   // Disable or Enable User

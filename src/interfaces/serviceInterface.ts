@@ -1,16 +1,14 @@
-import {
-  IOrder,
-  IUser,
-  ISession,
-  ILimit,
-  IStock,
-  IWatchlist,
-  ITransaction,
-  IPromotion,
-  INotification,
-} from "./modelInterface";
+import { ILimit, INotification } from "./modelInterface";
+import { IUser } from "../models/interfaces/userInterface";
+import { ISession } from "../models/interfaces/sessionInterface";
+import { IStock } from "../models/interfaces/stockInterface";
+import { IWatchlist } from "../models/interfaces/watchlistInterface";
+import { ITransaction } from "../models/interfaces/transactionInterface";
+import { IOrder } from "../models/interfaces/orderInterface";
+import { IPromotion } from "../models/interfaces/promotionInterface";
 import { ILimitOrderQuery } from "./Interfaces";
 import mongoose from "mongoose";
+import { IAdminDashboardSummary } from "./Interfaces";
 type ObjectId = mongoose.Types.ObjectId;
 export interface IUserService {
   signup(
@@ -89,6 +87,7 @@ export interface IAdminService {
     userId: string,
     token?: string
   ): Promise<{ message: string }>;
+  getAdminDashboard(): Promise<IAdminDashboardSummary>;
   getAllOrders(): Promise<IOrder[]>;
   getLimitOrders(query: ILimitOrderQuery): Promise<IOrder[]>;
   getMarketOrders(query: ILimitOrderQuery): Promise<IOrder[]>;

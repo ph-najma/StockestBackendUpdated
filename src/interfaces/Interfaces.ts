@@ -92,3 +92,12 @@ export enum OrderStatus {
   COMPLETED = "COMPLETED",
   FAILED = "FAILED",
 }
+
+export interface IAdminDashboardSummary {
+  totalUsers: number;
+  completed?: number;
+  canceled?: number;
+  tradingVolume: number;
+  totalProfitLoss: number;
+  feeCollection: number;
+}

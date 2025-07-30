@@ -1,6 +1,6 @@
 // models/orderModel.ts
 import mongoose, { Document, Schema } from "mongoose";
-import { IOrder } from "../interfaces/modelInterface";
+import { IOrder } from "./interfaces/orderInterface";
 
 const orderSchema = new Schema<IOrder>({
   user: { type: Schema.Types.ObjectId, ref: "User", required: true },

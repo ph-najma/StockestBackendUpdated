@@ -1,6 +1,7 @@
 import Promotion from "../models/promoModel";
-import { IpromotionRepsoitory } from "../interfaces/repositoryInterface";
-import { IPromotion } from "../interfaces/modelInterface";
+import { IpromotionRepsoitory } from "./interfaces/promotionRepoInterface";
+
+import { IPromotion } from "../models/interfaces/promotionInterface";
 export class PromotionRepository implements IpromotionRepsoitory {
   async createPromotion(data: IPromotion): Promise<IPromotion | null> {
     const updatedPromotion = await Promotion.findOneAndUpdate(

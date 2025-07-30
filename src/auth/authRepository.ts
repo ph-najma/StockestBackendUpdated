@@ -1,5 +1,5 @@
 import User from "../models/userModel";
-import { IUser } from "../interfaces/modelInterface";
+import { IUser } from "../models/interfaces/userInterface";
 
 export class AuthRepository {
   async findUserByGoogleId(googleId: string): Promise<IUser | null> {

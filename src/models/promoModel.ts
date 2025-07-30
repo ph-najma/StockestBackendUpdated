@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 
-import { IPromotion } from "../interfaces/modelInterface";
+import { IPromotion } from "./interfaces/promotionInterface";
 
 // Define the schema
 const promotionSchema = new Schema<IPromotion>({

@@ -25,6 +25,7 @@ const SessionRepository = new sessionRepository_1.sessionRepository();
 const adminController = new adminController_1.AdminController(new adminService_1.AdminService(userRepository, LimitRepository, orderRepository, stockRepository, TransactionRepository, promotionRepository, SessionRepository));
 const router = express_1.default.Router();
 router.post("/adminLogin", adminController.login);
+router.get("/adminHome", (0, auth_1.verifyTokenWithRole)("admin"), adminController.getDashboardSummary);
 router.get("/userList", (0, auth_1.verifyTokenWithRole)("admin"), adminController.getUserList);
 router.post("/disableUser/:id", (0, auth_1.verifyTokenWithRole)("admin"), adminController.disableUser);
 router.get("/stocklist", (0, auth_1.verifyTokenWithRole)("admin"), adminController.getStockList);

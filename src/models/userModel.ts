@@ -1,6 +1,8 @@
 import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcryptjs";
-import { IUser, IPromotion } from "../interfaces/modelInterface";
+
+import { IUser } from "./interfaces/userInterface";
+import { IPromotion } from "./interfaces/promotionInterface";
 
 const userSchema = new Schema<IUser>({
   name: {

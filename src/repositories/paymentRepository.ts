@@ -1,5 +1,5 @@
 import { razorpayClient } from "../utils/razorpay.client";
-import { IPaymentRepository } from "../interfaces/repositoryInterface";
+import { IPaymentRepository } from "./interfaces/paymentRepo";
 export class PaymentRepository implements IPaymentRepository {
   async createOrder(amount: number): Promise<Razorpay.Order> {
     const options: Razorpay.OrderCreateOptions = {

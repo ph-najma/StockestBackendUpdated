@@ -305,6 +305,15 @@ class AdminController {
                 (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
+        this.getDashboardSummary = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const summary = yield this.adminService.getAdminDashboard();
+                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.SUMMARY, summary);
+            }
+            catch (error) {
+                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+            }
+        });
         this.adminService = adminService;
     }
 }

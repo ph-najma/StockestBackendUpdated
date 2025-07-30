@@ -1,9 +1,8 @@
-
 import Stock from "../models/stockModel";
-import { IStock } from "../interfaces/modelInterface";
+import { IStock } from "../models/interfaces/stockInterface";
 import { Model } from "mongoose";
 import mongoose from "mongoose";
-import { IStockRepository } from "../interfaces/repositoryInterface";
+import { IStockRepository } from "./interfaces/stockRepoInterface";
 export class StockRepository implements IStockRepository {
   private model: Model<IStock>;
   constructor() {

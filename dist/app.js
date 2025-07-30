@@ -26,7 +26,7 @@ const squareOffService_1 = require("./services/squareOffService");
 const newOrder_1 = require("./repositories/newOrder");
 const fetchStock_1 = require("./repositories/fetchStock");
 const morgan_1 = __importDefault(require("morgan"));
-const rotating_file_stream_1 = require("rotating-file-stream"); // Log rotation
+const rotating_file_stream_1 = require("rotating-file-stream");
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -38,7 +38,7 @@ const app = (0, express_1.default)();
 const newOrderRepostory = new newOrder_1.newOrderRepository();
 const fetchStocks = new fetchStock_1.fetchStockRepository();
 const squareOffService = new squareOffService_1.SquareOffService();
-// Log directory setup
+// Log directory 
 if (process.env.NODE_ENV === "development") {
     app.use((0, morgan_1.default)("dev"));
 }
@@ -69,9 +69,9 @@ app.use(passport_1.default.session());
 app.use((0, cors_1.default)({ origin: "http://localhost:4200" }));
 app.use(express_1.default.json());
 // Routes
-app.use(userRoutes_1.default);
-app.use(adminRoutes_1.default);
-app.use(authRoutes_1.default);
+app.use("/api", userRoutes_1.default);
+app.use("/api", adminRoutes_1.default);
+app.use("/api", authRoutes_1.default);
 app.use((req, res, next) => {
     if (req.path.startsWith("/socket.io"))
         return next();

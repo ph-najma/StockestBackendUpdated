@@ -6,7 +6,7 @@ import {
   VerifyCallback,
 } from "passport-google-oauth20";
 import User from "../models/userModel";
-import { IUser } from "../interfaces/modelInterface";
+import { IUser } from "../models/interfaces/userInterface";
 import dotenv from "dotenv";
 import { Profile, GoogleCallbackParameters } from "passport-google-oauth20";
 

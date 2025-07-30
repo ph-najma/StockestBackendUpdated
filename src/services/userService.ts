@@ -6,28 +6,23 @@ import dotenv from "dotenv";
 import { sendEmail } from "../utils/sendEmail";
 import { generateOTP } from "../utils/otpGenerator";
 import { OtpStoreEntry } from "../interfaces/Interfaces";
-import {
-  IWatchlistRepository,
-  IuserRepsitory,
-  ITransactionRepository,
-  IStockRepository,
-  ISessionRepository,
-  IpromotionRepsoitory,
-  IOrderRepository,
-  INotificationRepository,
-} from "../interfaces/repositoryInterface";
-import {
-  IWatchlist,
-  IUser,
-  ITransaction,
-  IStock,
-  ISession,
-  IPromotion,
-  IOrder,
-  INotification,
-} from "../interfaces/modelInterface";
+import { IWatchlistRepository } from "../repositories/interfaces/watchlistRepoInterface";
+import { IuserRepsitory } from "../repositories/interfaces/userRepoInterface";
+import { ITransactionRepository } from "../repositories/interfaces/transactionRepoInterface";
+import { IStockRepository } from "../repositories/interfaces/stockRepoInterface";
+import { IpromotionRepsoitory } from "../repositories/interfaces/promotionRepoInterface";
+import { ISessionRepository } from "../repositories/interfaces/sessionRepoInterface";
+import { IOrderRepository } from "../repositories/interfaces/orderRepoInsterface";
+import { INotificationRepository } from "../repositories/interfaces/notificationRepoInterface";
+import { INotification } from "../interfaces/modelInterface";
+import { ISession } from "../models/interfaces/sessionInterface";
+import { IStock } from "../models/interfaces/stockInterface";
+import { IPromotion } from "../models/interfaces/promotionInterface";
+import { IUser } from "../models/interfaces/userInterface";
+import { IWatchlist } from "../models/interfaces/watchlistInterface";
+import { ITransaction } from "../models/interfaces/transactionInterface";
 import { IUserService } from "../interfaces/serviceInterface";
-
+import { IOrder } from "../models/interfaces/orderInterface";
 type ObjectId = mongoose.Types.ObjectId;
 
 dotenv.config();

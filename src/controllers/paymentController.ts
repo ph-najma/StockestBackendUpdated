@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import { IpaymentController } from "../interfaces/controllerInterfaces";
+import { IpaymentController } from "./interfaces/paymentControllerInterface";
 import { IPaymentService } from "../interfaces/serviceInterface";
 export class PaymentController implements IpaymentController {
   private paymentService: IPaymentService;

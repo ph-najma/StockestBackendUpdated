@@ -1,5 +1,5 @@
 import { AuthRepository } from "./authRepository";
-import { IUser } from "../interfaces/modelInterface";
+import { IUser } from "../models/interfaces/userInterface";
 
 export class AuthService {
   public authRepository: AuthRepository;

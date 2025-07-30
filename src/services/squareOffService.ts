@@ -1,6 +1,6 @@
 import OrderModel from "../models/orderModel";
 import StockModel from "../models/stockModel";
-import { IOrder } from "../interfaces/modelInterface";
+import { IOrder } from "../models/interfaces/orderInterface";
 
 export class SquareOffService {
   private orderModel;

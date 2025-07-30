@@ -1,8 +1,8 @@
 import { ILimitOrderQuery, OrderStatus } from "../interfaces/Interfaces";
 import { BaseRepository } from "./BaseRepository";
 import { Model } from "mongoose";
-import { IOrder } from "../interfaces/modelInterface";
-import { IOrderRepository } from "../interfaces/repositoryInterface";
+import { IOrder } from "../models/interfaces/orderInterface";
+import { IOrderRepository } from "./interfaces/orderRepoInsterface";
 
 export class OrderRepository
   extends BaseRepository<IOrder>

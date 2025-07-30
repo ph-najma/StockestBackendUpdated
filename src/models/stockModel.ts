@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
-import { IStock } from "../interfaces/modelInterface";
+
+import { IStock } from "./interfaces/stockInterface";
 
 const stockSchema: Schema = new Schema({
   symbol: { type: String, required: true },

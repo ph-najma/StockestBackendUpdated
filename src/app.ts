@@ -12,22 +12,19 @@ import { SquareOffService } from "./services/squareOffService";
 import { newOrderRepository } from "./repositories/newOrder";
 import { fetchStockRepository } from "./repositories/fetchStock";
 import morgan from "morgan";
-import { createStream } from "rotating-file-stream"; // Log rotation
+import { createStream } from "rotating-file-stream"; 
 import path from "path";
 import fs from "fs";
 import dotenv from "dotenv";
 import { io } from "./server";
-
 dotenv.config();
-
 const app: Application = express();
-
 connectDB();
 connectRedis();
 const newOrderRepostory = new newOrderRepository();
 const fetchStocks = new fetchStockRepository();
 const squareOffService = new SquareOffService();
-// Log directory setup
+// Log directory 
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 } else {
@@ -70,9 +67,9 @@ app.use(cors({ origin: "http://localhost:4200" }));
 app.use(express.json());
 
 // Routes
-app.use(userRoute);
-app.use(adminRoute);
-app.use(passportRoute);
+app.use("/api", userRoute);
+app.use("/api", adminRoute);
+app.use("/api", passportRoute);
 
 app.use((req, res, next) => {
   if (req.path.startsWith("/socket.io")) return next();

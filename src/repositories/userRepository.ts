@@ -1,6 +1,6 @@
 import User from "../models/userModel";
-import { IUser } from "../interfaces/modelInterface";
-import { IuserRepsitory } from "../interfaces/repositoryInterface";
+import { IUser } from "../models/interfaces/userInterface";
+import { IuserRepsitory } from "./interfaces/userRepoInterface";
 import mongoose from "mongoose";
 import { BaseRepository } from "./BaseRepository";
 export class UserRepository
