@@ -8,22 +8,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PromotionRepository = void 0;
-const promoModel_1 = __importDefault(require("../models/promoModel"));
 class PromotionRepository {
+    constructor(promotionModel) {
+        this.promotionModel = promotionModel;
+    }
     createPromotion(data) {
         return __awaiter(this, void 0, void 0, function* () {
-            const updatedPromotion = yield promoModel_1.default.findOneAndUpdate({}, { $set: data }, { new: true });
+            const updatedPromotion = yield this.promotionModel.findOneAndUpdate({}, { $set: data }, { new: true });
             return updatedPromotion;
         });
     }
     findPromotion() {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield promoModel_1.default.findOne();
+            return yield this.promotionModel.findOne();
         });
     }
 }

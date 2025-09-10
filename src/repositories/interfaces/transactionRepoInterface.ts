@@ -7,5 +7,6 @@ export interface ITransactionRepository {
   ): Promise<ITransaction[]>;
   getAllTransactions(): Promise<ITransaction[]>;
   getFeeCollectionSummary(): Promise<number>;
-  getTradeDiary(userId: string | undefined): Promise<any>;
+  // getTradeDiary(userId: string | undefined): Promise<any>;
+  create(transaction: Partial<ITransaction>[]): Promise<ITransaction[]>;
 }

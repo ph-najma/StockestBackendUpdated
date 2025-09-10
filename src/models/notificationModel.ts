@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { INotification } from "../interfaces/modelInterface";
+import { INotification } from "./interfaces/notificationInterface";
 const notificationSchema = new Schema<INotification>({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   message: { type: String, required: true },

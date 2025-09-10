@@ -1,35 +1,6 @@
 import express, { Router } from "express";
 import { verifyTokenWithRole } from "../middleware/auth";
-import { AdminController } from "../controllers/adminController";
-import { AdminService } from "../services/adminService";
-import { UserRepository } from "../repositories/userRepository";
-import { limitRepository } from "../repositories/limitRepository";
-import { StockRepository } from "../repositories/stockRepository";
-import { OrderRepository } from "../repositories/orderRepository";
-import { transactionRepository } from "../repositories/transactionRepository";
-import { PromotionRepository } from "../repositories/promotionRepository";
-import { sessionRepository } from "../repositories/sessionRepository";
-import orderModel from "../models/orderModel";
-import { IOrder } from "../models/interfaces/orderInterface";
-import { Model } from "mongoose";
-const userRepository = new UserRepository();
-const LimitRepository = new limitRepository();
-const orderRepository = new OrderRepository(orderModel as Model<IOrder>);
-const stockRepository = new StockRepository();
-const promotionRepository = new PromotionRepository();
-const TransactionRepository = new transactionRepository();
-const SessionRepository = new sessionRepository();
-const adminController = new AdminController(
-  new AdminService(
-    userRepository,
-    LimitRepository,
-    orderRepository,
-    stockRepository,
-    TransactionRepository,
-    promotionRepository,
-    SessionRepository
-  )
-);
+import { adminController } from "../dependencyInjection";
 const router: Router = express.Router();
 
 router.post("/adminLogin", adminController.login);

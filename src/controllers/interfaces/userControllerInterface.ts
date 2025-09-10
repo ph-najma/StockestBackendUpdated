@@ -1,9 +1,12 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 export interface IUserController {
   signup(req: Request, res: Response): Promise<void>;
   verifyOtp(req: Request, res: Response): Promise<void>;
   resendOtp(req: Request, res: Response): Promise<void>;
   login(req: Request, res: Response): Promise<void>;
+  googleAuth(req: Request, res: Response, next: NextFunction): void;
+  googleCallback(req: Request, res: Response, next: NextFunction): void;
+  logout(req: Request, res: Response): void;
   forgotPassword(req: Request, res: Response): Promise<void>;
   resetPassword(req: Request, res: Response): Promise<void>;
   getStockList(req: Request, res: Response): Promise<void>;
@@ -28,4 +31,5 @@ export interface IUserController {
   saveProfile(req: Request, res: Response): Promise<void>;
   getSignedUrl(req: Request, res: Response): Promise<void>;
   getNotifications(req: Request, res: Response): Promise<void>;
+  checkPortfolio(req: Request, res: Response): Promise<void>;
 }

@@ -1,9 +1,9 @@
 import { ILimitOrderQuery, OrderStatus } from "../interfaces/Interfaces";
 import { BaseRepository } from "./BaseRepository";
-import { Model } from "mongoose";
+import { Model, ObjectId } from "mongoose";
 import { IOrder } from "../models/interfaces/orderInterface";
 import { IOrderRepository } from "./interfaces/orderRepoInsterface";
-
+import {Types} from "mongoose"
 export class OrderRepository
   extends BaseRepository<IOrder>
   implements IOrderRepository
@@ -31,7 +31,9 @@ export class OrderRepository
       .populate("stock", "symbol name")
       .exec();
   }
-
+  async findPendingOrders(): Promise<IOrder[]> {
+    return this.model.find({ status: "PENDING" });
+  }
   async findCompletedOrders(): Promise<IOrder[]> {
     return this.model
       .find({ status: OrderStatus.COMPLETED })
@@ -52,6 +54,20 @@ export class OrderRepository
   // async createOrder(orderData: Partial<IOrder>): Promise<IOrder> {
   //   return Order.create(orderData);
   // }
+  async findBestOrder(
+    stock: string | Types.ObjectId,
+    type: "BUY" | "SELL",
+    criteria: any
+  ) {
+    return this.model
+      .findOne({
+        stock,
+        type,
+        status: "PENDING",
+        ...criteria,
+      })
+      .sort(criteria.sort || {});
+  }
   async getAllOrders(): Promise<IOrder[]> {
     return this.model
       .find()
@@ -69,5 +85,15 @@ export class OrderRepository
   }
   async countOrdersByUser(userId: string | undefined): Promise<number> {
     return this.model.countDocuments({ user: userId }).exec();
+  }
+  async update(order: IOrder): Promise<IOrder> {
+    return order.save();
+  }
+
+  async create(order: Partial<IOrder>): Promise<IOrder> {
+    return this.model.create(order);
+  }
+  async save(order: IOrder): Promise<IOrder> {
+    return order.save();
   }
 }

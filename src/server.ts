@@ -5,26 +5,34 @@ import { v4 as uuidv4 } from "uuid";
 import { StockRepository } from "./repositories/stockRepository";
 import jwt from "jsonwebtoken";
 import { UserRepository } from "./repositories/userRepository";
-import { transactionRepository } from "./repositories/transactionRepository";
+import { TransactionRepository } from "./repositories/transactionRepository";
 import { OrderRepository } from "./repositories/orderRepository";
 import { PromotionRepository } from "./repositories/promotionRepository";
-import { watchlistRepostory } from "./repositories/watchlistRepsoitory";
+import { WatchlistRepostory } from "./repositories/watchlistRepsoitory";
 import { NotificationRepository } from "./repositories/notificationRepository";
 import User from "./models/userModel";
-import { sessionRepository } from "./repositories/sessionRepository";
-import { IUserService } from "./interfaces/serviceInterface";
+import { SessionRepository } from "./repositories/sessionRepository";
+import { IUserService } from "./services/interfaces/userServiceInterface";
 import { UserService } from "./services/userService";
 import orderModel from "./models/orderModel";
+import userModel from "./models/userModel";
+import stockModel from "./models/stockModel";
+import promotionModel from "./models/promoModel";
+import watchlistModel from "./models/watchlistModel";
+import sessionModel from "./models/sessionModel";
+import notificationModel from "./models/notificationModel";
+import transactionModel from "./models/transactionModel";
 
-const userRepository = new UserRepository();
-const stockRepository = new StockRepository();
-const TransactionRepository = new transactionRepository();
+const userRepository = new UserRepository(userModel);
+const stockRepository = new StockRepository(stockModel);
+const transactionRepository = new TransactionRepository(transactionModel);
 const orderRepository = new OrderRepository(orderModel);
-const promotionRepository = new PromotionRepository();
-const watchlistRepository = new watchlistRepostory();
-const sessionRepsoitory = new sessionRepository();
-const notificationRepository = new NotificationRepository();
-const stockrepository = new StockRepository();
+const promotionRepository = new PromotionRepository(promotionModel);
+const watchlistRepository = new WatchlistRepostory(watchlistModel);
+const sessionRepsoitory = new SessionRepository(sessionModel);
+const notificationRepository = new NotificationRepository(notificationModel);
+const stockrepository = new StockRepository(stockModel);
+
 const server = http.createServer(app);
 
 const io = new Server(server, {
@@ -37,7 +45,7 @@ const io = new Server(server, {
 const userService: IUserService = new UserService(
   stockRepository,
   userRepository,
-  TransactionRepository,
+  transactionRepository,
   orderRepository,
   promotionRepository,
   watchlistRepository,

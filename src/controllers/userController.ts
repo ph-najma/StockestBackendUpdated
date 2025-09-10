@@ -1,14 +1,15 @@
 import { Request, Response } from "express";
-import { IUserService } from "../interfaces/serviceInterface";
+import { IUserService } from "../services/interfaces/userServiceInterface";
 import mongoose from "mongoose";
-import Stock from "../models/stockModel";
+import passport from "../config/passport";
+// import Stock from "../models/stockModel";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ResponseModel } from "../interfaces/Interfaces";
 import { HttpStatusCode } from "../interfaces/Interfaces";
 import { IUserController } from "./interfaces/userControllerInterface";
 import multer from "multer";
 import AWS from "aws-sdk";
-import sendResponse from "../helper/helper";
+import { sendResponse } from "../helper/helper";
 import User from "../models/userModel";
 import dotenv from "dotenv";
 import { MESSAGES } from "../helper/Message";
@@ -183,6 +184,28 @@ export class UserController implements IUserController {
       );
     }
   };
+  public checkPortfolio = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const { userId, stockId, quantity, type } = req.body;
+      const result = await this.userService.checkPortfolio(
+        userId,
+        stockId,
+        quantity,
+        type
+      );
+      if (!result.success) {
+        res.status(400).json({ message: result.message });
+        return;
+      }
+      res.status(200).json({ message: result.message });
+    } catch (error) {
+      console.error("Error checking portfolio:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  };
 
   //User Portfolio
   public getUserportfolio = async (
@@ -217,6 +240,22 @@ export class UserController implements IUserController {
       );
     }
   };
+
+  googleAuth(req: Request, res: Response, next: Function) {
+    passport.authenticate("google", { scope: ["profile", "email"] })(
+      req,
+      res,
+      next
+    );
+  }
+
+  googleCallback(req: Request, res: Response, next: Function) {
+    passport.authenticate("google", {
+      failureRedirect: "/",
+      successRedirect: "/home",
+    })(req, res, next);
+  }
+
   //placeOrder
   public placeOrder = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -730,4 +769,9 @@ export class UserController implements IUserController {
       );
     }
   };
+  logout(req: Request, res: Response) {
+    req.logout(() => {
+      res.redirect("/");
+    });
+  }
 }

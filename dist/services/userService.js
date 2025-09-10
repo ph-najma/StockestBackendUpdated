@@ -20,6 +20,7 @@ const crypto_1 = __importDefault(require("crypto"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const sendEmail_1 = require("../utils/sendEmail");
 const otpGenerator_1 = require("../utils/otpGenerator");
+const helper_1 = require("../helper/helper");
 dotenv_1.default.config();
 const otpStore = new Map();
 class UserService {
@@ -228,6 +229,42 @@ class UserService {
             return this.stockRepository.getAllStocks();
         });
     }
+    checkPortfolio(userId, stockId, quantity, type) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield this.userRepository.findByIdWithPortfolio(userId);
+            if (!user) {
+                return { success: false, message: "User not found" };
+            }
+            if (type === "SELL") {
+                const portfolioItem = user.portfolio.find((item) => item.stockId.toString() === stockId);
+                if (!portfolioItem || portfolioItem.quantity < quantity) {
+                    return {
+                        success: false,
+                        message: "Insufficient stock in portfolio for this sell order",
+                    };
+                }
+            }
+            return { success: true, message: "Portfolio check passed" };
+        });
+    }
+    handleGoogleLogin(profile) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b, _c, _d;
+            const email = (_b = (_a = profile.emails) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.value;
+            if (!email)
+                throw new Error("Email not found in Google profile");
+            let user = yield this.userRepository.findUserByGoogleId(profile.id);
+            if (!user) {
+                user = yield this.userRepository.save({
+                    googleId: profile.id,
+                    name: profile.displayName,
+                    email,
+                    profilePhoto: (_d = (_c = profile.photos) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.value,
+                });
+            }
+            return user;
+        });
+    }
     //Place an Order
     placeOrder(user, stock, type, orderType, quantity, price, stopPrice, isIntraday) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -325,15 +362,90 @@ class UserService {
             }
         });
     }
+    // async getTradeDiary(userId: string | undefined): Promise<any> {
+    //   try {
+    //     const tradeData = await this.transactionRepository.getTradeDiary(userId);
+    //     return tradeData;
+    //   } catch (error) {
+    //     throw error;
+    //   }
+    // }
     getTradeDiary(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const tradeData = yield this.transactionRepository.getTradeDiary(userId);
-                return tradeData;
-            }
-            catch (error) {
-                throw error;
-            }
+            const transactions = yield this.transactionRepository.getTransactions(userId, 0, 0);
+            let totalTrades = 0;
+            let totalPnl = 0;
+            let totalCharges = 0;
+            let totalBrokerage = 0;
+            const tradeDetails = [];
+            transactions.forEach((transaction) => {
+                var _a, _b;
+                const pnl = transaction.type === "BUY"
+                    ? transaction.price * transaction.quantity
+                    : 0;
+                const charges = transaction.fees;
+                const brokerage = charges * 0.1;
+                totalTrades++;
+                totalPnl += pnl;
+                totalCharges += charges;
+                totalBrokerage += brokerage;
+                const date = transaction.createdAt.toISOString().split("T")[0];
+                const buyOrderPrice = (0, helper_1.isIOrder)(transaction.buyOrder)
+                    ? transaction.buyOrder.price
+                    : 0;
+                const sellOrderPrice = (0, helper_1.isIOrder)(transaction.sellOrder)
+                    ? transaction.sellOrder.price
+                    : 0;
+                let dailyTrade = tradeDetails.find((trade) => trade.date === date);
+                if (!dailyTrade) {
+                    dailyTrade = {
+                        date,
+                        trades: 0,
+                        overallPL: 0,
+                        netPL: 0,
+                        status: transaction.status,
+                        details: [],
+                    };
+                    tradeDetails.push(dailyTrade);
+                }
+                dailyTrade.trades++;
+                dailyTrade.overallPL += pnl;
+                dailyTrade.netPL += pnl - charges - brokerage;
+                dailyTrade.details.push({
+                    time: transaction.createdAt.toLocaleTimeString(),
+                    type: transaction.type,
+                    symbol: (_b = (_a = transaction.stock) === null || _a === void 0 ? void 0 : _a.symbol) !== null && _b !== void 0 ? _b : "Unknown",
+                    quantity: transaction.quantity,
+                    entry: buyOrderPrice,
+                    exit: sellOrderPrice,
+                    pnl,
+                    notes: "Example trade note",
+                });
+            });
+            const winTrades = transactions.filter((transaction) => {
+                const buyOrderPrice = (0, helper_1.isIOrder)(transaction.buyOrder)
+                    ? transaction.buyOrder.price
+                    : 0;
+                const sellOrderPrice = (0, helper_1.isIOrder)(transaction.sellOrder)
+                    ? transaction.sellOrder.price
+                    : 0;
+                return transaction.type === "BUY" && sellOrderPrice > buyOrderPrice;
+            }).length;
+            const lossTrades = totalTrades - winTrades;
+            const winRate = (winTrades / totalTrades) * 100;
+            const averageWin = winTrades ? totalPnl / winTrades : 0;
+            const averageLoss = lossTrades ? totalPnl / lossTrades : 0;
+            return {
+                winRate,
+                averageWin,
+                averageLoss,
+                overallPL: totalPnl,
+                netPL: totalPnl - totalCharges - totalBrokerage,
+                totalTrades,
+                charges: totalCharges,
+                brokerage: totalBrokerage,
+                trades: tradeDetails,
+            };
         });
     }
     getActiveSessions() {

@@ -1,38 +1,22 @@
-import Watchlist from "../models/watchlistModel";
 import { IWatchlist } from "../models/interfaces/watchlistInterface";
-import Stock from "../models/stockModel";
 import { IWatchlistRepository } from "./interfaces/watchlistRepoInterface";
-export class watchlistRepostory implements IWatchlistRepository {
-  async getByUserId(userId: string | undefined): Promise<any> {
+import { Model } from "mongoose";
+export class WatchlistRepostory implements IWatchlistRepository {
+  constructor(private watchlistModel: Model<IWatchlist>) {}
+  async getByUserId(userId: string | undefined): Promise<IWatchlist | null> {
     if (!userId) {
       console.error("User ID is undefined");
       return null;
     }
 
     // Fetch the watchlist
-    const watchlist = await Watchlist.findOne({ user: userId });
+    const watchlist = await this.watchlistModel
+      .findOne({ user: userId })
+      .lean();
     if (!watchlist) {
       return null;
     }
-
-    const uniqueStockSymbols = [
-      ...new Set(watchlist.stocks.map((stock: any) => stock.symbol)),
-    ];
-    const stockDataPromises = uniqueStockSymbols.map((symbol) =>
-      Stock.findOne({ symbol })
-        .sort({ timestamp: -1 })
-        .select("symbol price change volume timestamp")
-        .lean()
-    );
-
-    const stockData = await Promise.all(stockDataPromises);
-
-    const enrichedWatchlist = {
-      ...watchlist.toObject(),
-      stocks: stockData.filter((data: any) => data),
-    };
-
-    return enrichedWatchlist;
+    return watchlist;
   }
 
   async ensureWatchlistAndAddStock(
@@ -43,7 +27,7 @@ export class watchlistRepostory implements IWatchlistRepository {
       throw new Error("User ID is required.");
     }
 
-    let watchlist = await Watchlist.findOne({ user: userId });
+    let watchlist = await this.watchlistModel.findOne({ user: userId });
 
     if (watchlist) {
       const stockExists = watchlist.stocks.some(
@@ -55,7 +39,7 @@ export class watchlistRepostory implements IWatchlistRepository {
         await watchlist.save();
       }
     } else {
-      watchlist = new Watchlist({
+      watchlist = new this.watchlistModel({
         user: userId,
         stocks: [{ symbol: stockSymbol, addedAt: new Date() }],
       });

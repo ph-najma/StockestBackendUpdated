@@ -1,10 +1,10 @@
-import Promotion from "../models/promoModel";
 import { IpromotionRepsoitory } from "./interfaces/promotionRepoInterface";
-
 import { IPromotion } from "../models/interfaces/promotionInterface";
+import { Model } from "mongoose";
 export class PromotionRepository implements IpromotionRepsoitory {
+  constructor(private promotionModel: Model<IPromotion>) {}
   async createPromotion(data: IPromotion): Promise<IPromotion | null> {
-    const updatedPromotion = await Promotion.findOneAndUpdate(
+    const updatedPromotion = await this.promotionModel.findOneAndUpdate(
       {},
       { $set: data },
       { new: true }
@@ -12,6 +12,6 @@ export class PromotionRepository implements IpromotionRepsoitory {
     return updatedPromotion;
   }
   async findPromotion(): Promise<IPromotion | null> {
-    return await Promotion.findOne();
+    return await this.promotionModel.findOne();
   }
 }

@@ -1,104 +1,49 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const google_auth_library_1 = require("google-auth-library");
 const auth_1 = require("../middleware/auth");
-const dotenv_1 = __importDefault(require("dotenv"));
-const userController_1 = require("../controllers/userController");
-const userModel_1 = __importDefault(require("../models/userModel"));
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const checkPortfolio_1 = require("../controllers/checkPortfolio");
-const userService_1 = require("../services/userService");
-const stockRepository_1 = require("../repositories/stockRepository");
-const userRepository_1 = require("../repositories/userRepository");
-const transactionRepository_1 = require("../repositories/transactionRepository");
-const orderRepository_1 = require("../repositories/orderRepository");
-const promotionRepository_1 = require("../repositories/promotionRepository");
-const watchlistRepsoitory_1 = require("../repositories/watchlistRepsoitory");
-const paymentController_1 = require("../controllers/paymentController");
-const sessionRepository_1 = require("../repositories/sessionRepository");
-const paymentServices_1 = require("../services/paymentServices");
-const paymentRepository_1 = require("../repositories/paymentRepository");
-const notificationRepository_1 = require("../repositories/notificationRepository");
-const orderModel_1 = __importDefault(require("../models/orderModel"));
-const userRepository = new userRepository_1.UserRepository();
-const payemntRepository = new paymentRepository_1.PaymentRepository();
-const stockRepository = new stockRepository_1.StockRepository();
-const TransactionRepository = new transactionRepository_1.transactionRepository();
-const orderRepository = new orderRepository_1.OrderRepository(orderModel_1.default);
-const promotionRepository = new promotionRepository_1.PromotionRepository();
-const watchlistRepository = new watchlistRepsoitory_1.watchlistRepostory();
-const sessionRepsoitory = new sessionRepository_1.sessionRepository();
-const notificationRepository = new notificationRepository_1.NotificationRepository();
-const paymentController = new paymentController_1.PaymentController(new paymentServices_1.PaymentService(payemntRepository, userRepository, sessionRepsoitory));
-const userController = new userController_1.UserController(new userService_1.UserService(stockRepository, userRepository, TransactionRepository, orderRepository, promotionRepository, watchlistRepository, sessionRepsoitory, notificationRepository));
-dotenv_1.default.config();
+// import { checkPortfolio } from "../controllers/checkPortfolio";
+const dependencyInjection_1 = require("../dependencyInjection");
+const dependencyInjection_2 = require("../dependencyInjection");
 const router = express_1.default.Router();
-const client = new google_auth_library_1.OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-function generateToken(user) {
-    const payload = { userId: user._id };
-    return jsonwebtoken_1.default.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: "1h",
-    });
-}
 // User authentication routes
-router.post("/signup", userController.signup);
-router.post("/resendOtp", userController.resendOtp);
-router.post("/verifyOtp", userController.verifyOtp);
-router.post("/login", userController.login);
-router.post("/forgotPassword", userController.forgotPassword);
-router.post("/resetPassword", userController.resetPassword);
-router.get("/stocks", (0, auth_1.verifyTokenWithRole)("user"), userController.getStockList);
-router.get("/UserProfile", (0, auth_1.verifyTokenWithRole)("user"), userController.getUserProfile);
-router.post("/orders", (0, auth_1.verifyTokenWithRole)("user"), userController.placeOrder);
-router.get("/portfolio", (0, auth_1.verifyTokenWithRole)("user"), userController.getUserportfolio);
-router.post("/checkPortfolio", checkPortfolio_1.checkPortfolio);
-router.get("/transactions", (0, auth_1.verifyTokenWithRole)("user"), userController.getTransaction);
-router.post("/updatePortfolio", userController.updatePortfolioAfterSell);
-router.get("/getWatchlist", (0, auth_1.verifyTokenWithRole)("user"), userController.getWatchlist);
-router.post("/ensureAndAddStock", (0, auth_1.verifyTokenWithRole)("user"), userController.ensureWatchlistAndAddStock);
-router.get("/getStockData", (0, auth_1.verifyTokenWithRole)("user"), userController.getStockData);
-router.get("/gethistorical", (0, auth_1.verifyTokenWithRole)("user"), userController.getHistorical);
-router.get("/getOrders", (0, auth_1.verifyTokenWithRole)("user"), userController.getOrders);
-router.post("/create-order", (0, auth_1.verifyTokenWithRole)("user"), (req, res) => paymentController.createOrder(req, res));
-router.post("/verify-payment", (0, auth_1.verifyTokenWithRole)("user"), (req, res) => paymentController.verifyPayment(req, res));
-router.get("/promotions", (0, auth_1.verifyTokenWithRole)("user"), userController.getPromotions);
-router.get("/tradeDiary", (0, auth_1.verifyTokenWithRole)("user"), userController.getTradeDiary);
-router.get("/getPurchased", (0, auth_1.verifyTokenWithRole)("user"), userController.getPurchased);
-router.get("/getAssigned", (0, auth_1.verifyTokenWithRole)("user"), userController.getAssigned);
-router.get("/refresh", userController.refreshToken);
-router.get("/search", (0, auth_1.verifyTokenWithRole)("user"), userController.getBySearch);
-router.get("/activeSessions", (0, auth_1.verifyTokenWithRole)("user"), userController.getActiveSessions);
-router.get("/get-signed-url", (0, auth_1.verifyTokenWithRole)("user"), userController.getSignedUrl);
-router.post("/update-profile", (0, auth_1.verifyTokenWithRole)("user"), userController.saveProfile);
-router.post("/generate", userController.generate);
-// Google OAuth routes
-// router.get(
-//   "/auth/google",
-//   passport.authenticate("google", {
-//     scope: ["profile", "email"], // Request access to the user's profile and email
-//   })
-// );
-// router.get(
-//   "/auth/google/callback",
-//   passport.authenticate("google", { failureRedirect: "/" }),
-//   (req: Request, res: Response) => {
-//     res.redirect("/home"); // Redirect on successful authentication
-//   }
-// );
-router.get("/notifications", (0, auth_1.verifyTokenWithRole)("user"), userController.getNotifications);
+router.post("/signup", dependencyInjection_1.userController.signup);
+router.post("/resendOtp", dependencyInjection_1.userController.resendOtp);
+router.post("/verifyOtp", dependencyInjection_1.userController.verifyOtp);
+router.post("/login", dependencyInjection_1.userController.login);
+router.post("/forgotPassword", dependencyInjection_1.userController.forgotPassword);
+router.post("/resetPassword", dependencyInjection_1.userController.resetPassword);
+router.get("/auth/google", dependencyInjection_1.userController.googleAuth);
+router.get("/auth/google/callback", dependencyInjection_1.userController.googleCallback);
+router.get("/logout", dependencyInjection_1.userController.logout);
+router.get("/stocks", (0, auth_1.verifyTokenWithRole)("user"), dependencyInjection_1.userController.getStockList);
+router.get("/UserProfile", (0, auth_1.verifyTokenWithRole)("user"), dependencyInjection_1.userController.getUserProfile);
+router.post("/orders", (0, auth_1.verifyTokenWithRole)("user"), dependencyInjection_1.userController.placeOrder);
+router.get("/portfolio", (0, auth_1.verifyTokenWithRole)("user"), dependencyInjection_1.userController.getUserportfolio);
+router.post("/checkPortfolio", dependencyInjection_1.userController.checkPortfolio);
+router.get("/transactions", (0, auth_1.verifyTokenWithRole)("user"), dependencyInjection_1.userController.getTransaction);
+router.post("/updatePortfolio", dependencyInjection_1.userController.updatePortfolioAfterSell);
+router.get("/getWatchlist", (0, auth_1.verifyTokenWithRole)("user"), dependencyInjection_1.userController.getWatchlist);
+router.post("/ensureAndAddStock", (0, auth_1.verifyTokenWithRole)("user"), dependencyInjection_1.userController.ensureWatchlistAndAddStock);
+router.get("/getStockData", (0, auth_1.verifyTokenWithRole)("user"), dependencyInjection_1.userController.getStockData);
+router.get("/gethistorical", (0, auth_1.verifyTokenWithRole)("user"), dependencyInjection_1.userController.getHistorical);
+router.get("/getOrders", (0, auth_1.verifyTokenWithRole)("user"), dependencyInjection_1.userController.getOrders);
+router.post("/create-order", (0, auth_1.verifyTokenWithRole)("user"), dependencyInjection_2.paymentController.createOrder.bind(dependencyInjection_2.paymentController));
+router.post("/verify-payment", (0, auth_1.verifyTokenWithRole)("user"), dependencyInjection_2.paymentController.verifyPayment.bind(dependencyInjection_2.paymentController));
+router.get("/promotions", (0, auth_1.verifyTokenWithRole)("user"), dependencyInjection_1.userController.getPromotions);
+router.get("/tradeDiary", (0, auth_1.verifyTokenWithRole)("user"), dependencyInjection_1.userController.getTradeDiary);
+router.get("/getPurchased", (0, auth_1.verifyTokenWithRole)("user"), dependencyInjection_1.userController.getPurchased);
+router.get("/getAssigned", (0, auth_1.verifyTokenWithRole)("user"), dependencyInjection_1.userController.getAssigned);
+router.get("/refresh", dependencyInjection_1.userController.refreshToken);
+router.get("/search", (0, auth_1.verifyTokenWithRole)("user"), dependencyInjection_1.userController.getBySearch);
+router.get("/activeSessions", (0, auth_1.verifyTokenWithRole)("user"), dependencyInjection_1.userController.getActiveSessions);
+router.get("/get-signed-url", (0, auth_1.verifyTokenWithRole)("user"), dependencyInjection_1.userController.getSignedUrl);
+router.post("/update-profile", (0, auth_1.verifyTokenWithRole)("user"), dependencyInjection_1.userController.saveProfile);
+router.post("/generate", dependencyInjection_1.userController.generate);
+router.get("/notifications", (0, auth_1.verifyTokenWithRole)("user"), dependencyInjection_1.userController.getNotifications);
 router.get("/logout", (req, res) => {
     req.logout((err) => {
         if (err) {
@@ -108,42 +53,4 @@ router.get("/logout", (req, res) => {
         res.redirect("/"); // Redirect after logout
     });
 });
-// Google Login API route
-router.post("/auth/google/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id_token } = req.body;
-    try {
-        // Verify the Google token
-        const ticket = yield client.verifyIdToken({
-            idToken: id_token,
-            audience: process.env.GOOGLE_CLIENT_ID,
-        });
-        const payload = ticket.getPayload();
-        const googleId = payload === null || payload === void 0 ? void 0 : payload.sub;
-        const email = payload === null || payload === void 0 ? void 0 : payload.email;
-        const name = payload === null || payload === void 0 ? void 0 : payload.name;
-        const profilePicture = payload === null || payload === void 0 ? void 0 : payload.picture;
-        if (!googleId || !email || !name) {
-            res.status(400).json({ message: "Invalid token payload" });
-            return;
-        }
-        // Find or create the user
-        let user = yield userModel_1.default.findOne({ googleId });
-        if (!user) {
-            user = new userModel_1.default({
-                googleId,
-                name,
-                email,
-                profilePicture,
-            });
-            yield user.save();
-        }
-        // Generate and return a JWT token
-        const token = generateToken(user);
-        res.json({ token });
-    }
-    catch (err) {
-        console.error("Error during Google login:", err);
-        res.status(500).json({ message: "Something went wrong" });
-    }
-}));
 exports.default = router;

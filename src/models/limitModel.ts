@@ -1,6 +1,6 @@
 import mongoose, { Schema, Model } from "mongoose";
 
-import { ILimit } from "../interfaces/modelInterface";
+import { ILimit } from "./interfaces/limitInterface";
 const LimitSchema: Schema = new Schema<ILimit>({
   maxBuyLimit: {
     type: Number,

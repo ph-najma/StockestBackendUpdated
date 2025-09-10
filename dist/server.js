@@ -29,15 +29,22 @@ const userModel_1 = __importDefault(require("./models/userModel"));
 const sessionRepository_1 = require("./repositories/sessionRepository");
 const userService_1 = require("./services/userService");
 const orderModel_1 = __importDefault(require("./models/orderModel"));
-const userRepository = new userRepository_1.UserRepository();
-const stockRepository = new stockRepository_1.StockRepository();
-const TransactionRepository = new transactionRepository_1.transactionRepository();
+const userModel_2 = __importDefault(require("./models/userModel"));
+const stockModel_1 = __importDefault(require("./models/stockModel"));
+const promoModel_1 = __importDefault(require("./models/promoModel"));
+const watchlistModel_1 = __importDefault(require("./models/watchlistModel"));
+const sessionModel_1 = __importDefault(require("./models/sessionModel"));
+const notificationModel_1 = __importDefault(require("./models/notificationModel"));
+const transactionModel_1 = __importDefault(require("./models/transactionModel"));
+const userRepository = new userRepository_1.UserRepository(userModel_2.default);
+const stockRepository = new stockRepository_1.StockRepository(stockModel_1.default);
+const transactionRepository = new transactionRepository_1.TransactionRepository(transactionModel_1.default);
 const orderRepository = new orderRepository_1.OrderRepository(orderModel_1.default);
-const promotionRepository = new promotionRepository_1.PromotionRepository();
-const watchlistRepository = new watchlistRepsoitory_1.watchlistRepostory();
-const sessionRepsoitory = new sessionRepository_1.sessionRepository();
-const notificationRepository = new notificationRepository_1.NotificationRepository();
-const stockrepository = new stockRepository_1.StockRepository();
+const promotionRepository = new promotionRepository_1.PromotionRepository(promoModel_1.default);
+const watchlistRepository = new watchlistRepsoitory_1.WatchlistRepostory(watchlistModel_1.default);
+const sessionRepsoitory = new sessionRepository_1.SessionRepository(sessionModel_1.default);
+const notificationRepository = new notificationRepository_1.NotificationRepository(notificationModel_1.default);
+const stockrepository = new stockRepository_1.StockRepository(stockModel_1.default);
 const server = http_1.default.createServer(app_1.default);
 const io = new socket_io_1.Server(server, {
     cors: {
@@ -46,7 +53,7 @@ const io = new socket_io_1.Server(server, {
     },
 });
 exports.io = io;
-const userService = new userService_1.UserService(stockRepository, userRepository, TransactionRepository, orderRepository, promotionRepository, watchlistRepository, sessionRepsoitory, notificationRepository);
+const userService = new userService_1.UserService(stockRepository, userRepository, transactionRepository, orderRepository, promotionRepository, watchlistRepository, sessionRepsoitory, notificationRepository);
 // 🔹 Handle client connection for Socket.IO
 io.on("connection", (socket) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b, _c, _d;

@@ -1,123 +1,62 @@
 import session from "../models/sessionModel";
 import { ISession } from "../models/interfaces/sessionInterface";
 import { ISessionRepository } from "./interfaces/sessionRepoInterface";
+import { Model } from "mongoose";
 
-export class sessionRepository implements ISessionRepository {
-  public async createSession(sessionData: ISession): Promise<ISession> {
-    try {
-      const newSession = new session(sessionData);
-
-      const savedSession = await newSession.save();
-
-      return savedSession;
-    } catch (error: any) {
-      throw new Error("Error creating session: " + error.message);
-    }
+export class SessionRepository implements ISessionRepository {
+  constructor(private SessionModel: Model<ISession>) {}
+  async createSession(sessionData: ISession): Promise<ISession> {
+    const newSession = new this.SessionModel(sessionData);
+    return newSession.save();
   }
 
   // Get session by ID
-  public async getSessionById(sessionId: string): Promise<ISession | null> {
-    try {
-      const foundSession = await session.findById(sessionId).exec();
-      if (!foundSession) {
-        throw new Error("Session not found");
-      }
-      return foundSession;
-    } catch (error: any) {
-      throw new Error("Error retrieving session: " + error.message);
-    }
+  async getSessionById(sessionId: string): Promise<ISession | null> {
+    return this.SessionModel.findById(sessionId).exec();
   }
-
   // Update session by ID
-  public async updateSession(
+  async updateSession(
     sessionId: string,
     sessionData: Partial<ISession>
   ): Promise<ISession | null> {
-    try {
-      const updatedSession = await session
-        .findByIdAndUpdate(sessionId, sessionData, { new: true })
-        .exec();
-      if (!updatedSession) {
-        throw new Error("Session not found");
-      }
-      return updatedSession;
-    } catch (error: any) {
-      throw new Error("Error updating session: " + error.message);
-    }
+    return this.SessionModel.findByIdAndUpdate(sessionId, sessionData, {
+      new: true,
+    }).exec();
   }
 
-  public async assignStudent(
+  async assignStudent(
     sessionId: string,
-    student_id: string | undefined
+    studentId: string | undefined
   ): Promise<ISession | null> {
-    try {
-      const updatedSession = await session.findByIdAndUpdate(
-        sessionId, // Assuming course_id matches the session _id
-        { student_id: student_id },
-        { new: true }
-      );
-      return updatedSession;
-    } catch (error: any) {
-      throw new Error("Error updating session: " + error.message);
-    }
+    return this.SessionModel.findByIdAndUpdate(
+      sessionId,
+      { student_id: studentId },
+      { new: true }
+    ).exec();
   }
 
-  // Get all sessions
-  public async getAllSessions(): Promise<ISession[]> {
-    try {
-      return await session.find().exec();
-    } catch (error: any) {
-      throw new Error("Error retrieving sessions: " + error.message);
-    }
+  async getAllSessions(): Promise<ISession[]> {
+    return this.SessionModel.find().exec();
   }
-  public async getPurchased(userId: string | undefined): Promise<ISession[]> {
-    try {
-      return await session.find({ student_id: userId }).exec();
-    } catch (error: any) {
-      throw new Error("Error retrieving sessions: " + error.message);
-    }
+
+  async getPurchased(userId: string | undefined): Promise<ISession[]> {
+    return this.SessionModel.find({ student_id: userId }).exec();
   }
-  public async getActiveSessions(): Promise<ISession[]> {
-    try {
-      return await session.find({ status: "SCHEDULED" }).exec();
-    } catch (error: any) {
-      throw new Error("Error retrieving sessions: " + error.message);
-    }
+  async getActiveSessions(): Promise<ISession[]> {
+    return this.SessionModel.find({ status: "SCHEDULED" }).exec();
   }
-  public async updateSessionStatus(
+
+  async updateSessionStatus(
     sessionId: string,
     newStatus: "SCHEDULED" | "COMPLETED" | "CANCELED"
   ): Promise<ISession | null> {
-    try {
-      // Find the session by ID and update the status
-      const updatedSession = await session
-        .findByIdAndUpdate(
-          sessionId,
-          { status: newStatus, updated_at: new Date() }, // Update status and timestamp
-          { new: true } // Return the updated session
-        )
-        .exec();
-
-      if (!updatedSession) {
-        throw new Error("Session not found");
-      }
-
-      return updatedSession;
-    } catch (error: any) {
-      throw new Error("Error updating session status: " + error.message);
-    }
+    return this.SessionModel.findByIdAndUpdate(
+      sessionId,
+      { status: newStatus, updated_at: new Date() },
+      { new: true }
+    ).exec();
   }
-  async getAssigned(
-    Instructoremail: string | undefined
-  ): Promise<ISession[] | null> {
-    try {
-      const sessionData = await session.find({
-        instructor_email: Instructoremail,
-      });
-
-      return sessionData;
-    } catch (error: any) {
-      throw new Error("Error finding sessions " + error.message);
-    }
+  async getAssigned(instructorEmail: string | undefined): Promise<ISession[]> {
+    return this.SessionModel.find({ instructor_email: instructorEmail }).exec();
   }
 }

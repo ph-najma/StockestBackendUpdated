@@ -15,9 +15,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.NotificationRepository = void 0;
 const notificationModel_1 = __importDefault(require("../models/notificationModel"));
 class NotificationRepository {
+    constructor(notificationModel) {
+        this.notificationModel = notificationModel;
+    }
     getNotifications(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return notificationModel_1.default.find({ user: userId }).sort({ createdAt: -1 });
+            return this.notificationModel
+                .find({ user: userId })
+                .sort({ createdAt: -1 });
+        });
+    }
+    create(notification) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return notificationModel_1.default.create(notification);
         });
     }
 }

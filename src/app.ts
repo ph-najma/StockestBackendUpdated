@@ -3,16 +3,17 @@ import cors from "cors";
 import connectDB from "./config/db";
 import userRoute from "./routes/userRoutes";
 import adminRoute from "./routes/adminRoutes";
-import passportRoute from "./auth/authRoutes";
+// import passportRoute from "./auth/authRoutes";
 import { connectRedis } from "./config/redis";
 import session from "express-session";
 import passport from "passport";
 import cron from "node-cron";
 import { SquareOffService } from "./services/squareOffService";
-import { newOrderRepository } from "./repositories/newOrder";
+// import { newOrderRepository } from "./repositories/newOrder";
 import { fetchStockRepository } from "./repositories/fetchStock";
+import { orderMatchingService } from "./dependencyInjection";
 import morgan from "morgan";
-import { createStream } from "rotating-file-stream"; 
+import { createStream } from "rotating-file-stream";
 import path from "path";
 import fs from "fs";
 import dotenv from "dotenv";
@@ -21,10 +22,10 @@ dotenv.config();
 const app: Application = express();
 connectDB();
 connectRedis();
-const newOrderRepostory = new newOrderRepository();
+// const newOrderRepostory = new newOrderRepository();
 const fetchStocks = new fetchStockRepository();
 const squareOffService = new SquareOffService();
-// Log directory 
+// Log directory
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 } else {
@@ -53,7 +54,7 @@ console.log("Rotating log stream configured.");
 // Middleware for session management
 app.use(
   session({
-    secret: "my-secret-key",
+    secret: process.env.SESSION_SECRET!,
     resave: false,
     saveUninitialized: true,
   })
@@ -62,14 +63,19 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use(cors({ origin: "http://localhost:4200" }));
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:4200",
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 
 // Routes
 app.use("/api", userRoute);
 app.use("/api", adminRoute);
-app.use("/api", passportRoute);
+// app.use("/api", passportRoute);
 
 app.use((req, res, next) => {
   if (req.path.startsWith("/socket.io")) return next();
@@ -78,7 +84,7 @@ app.use((req, res, next) => {
 cron.schedule("* * * * *", async () => {
   console.log("Running order matching...");
   try {
-    await newOrderRepostory.matchOrders();
+    await orderMatchingService.matchOrders();
     console.log("Order matching completed.");
   } catch (error) {
     console.error("Error while matching orders:", error);

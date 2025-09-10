@@ -8,131 +8,61 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sessionRepository = void 0;
-const sessionModel_1 = __importDefault(require("../models/sessionModel"));
-class sessionRepository {
+exports.SessionRepository = void 0;
+class SessionRepository {
+    constructor(SessionModel) {
+        this.SessionModel = SessionModel;
+    }
     createSession(sessionData) {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const newSession = new sessionModel_1.default(sessionData);
-                const savedSession = yield newSession.save();
-                return savedSession;
-            }
-            catch (error) {
-                throw new Error("Error creating session: " + error.message);
-            }
+            const newSession = new this.SessionModel(sessionData);
+            return newSession.save();
         });
     }
     // Get session by ID
     getSessionById(sessionId) {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const foundSession = yield sessionModel_1.default.findById(sessionId).exec();
-                if (!foundSession) {
-                    throw new Error("Session not found");
-                }
-                return foundSession;
-            }
-            catch (error) {
-                throw new Error("Error retrieving session: " + error.message);
-            }
+            return this.SessionModel.findById(sessionId).exec();
         });
     }
     // Update session by ID
     updateSession(sessionId, sessionData) {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const updatedSession = yield sessionModel_1.default
-                    .findByIdAndUpdate(sessionId, sessionData, { new: true })
-                    .exec();
-                if (!updatedSession) {
-                    throw new Error("Session not found");
-                }
-                return updatedSession;
-            }
-            catch (error) {
-                throw new Error("Error updating session: " + error.message);
-            }
+            return this.SessionModel.findByIdAndUpdate(sessionId, sessionData, {
+                new: true,
+            }).exec();
         });
     }
-    assignStudent(sessionId, student_id) {
+    assignStudent(sessionId, studentId) {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const updatedSession = yield sessionModel_1.default.findByIdAndUpdate(sessionId, // Assuming course_id matches the session _id
-                { student_id: student_id }, { new: true });
-                return updatedSession;
-            }
-            catch (error) {
-                throw new Error("Error updating session: " + error.message);
-            }
+            return this.SessionModel.findByIdAndUpdate(sessionId, { student_id: studentId }, { new: true }).exec();
         });
     }
-    // Get all sessions
     getAllSessions() {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                return yield sessionModel_1.default.find().exec();
-            }
-            catch (error) {
-                throw new Error("Error retrieving sessions: " + error.message);
-            }
+            return this.SessionModel.find().exec();
         });
     }
     getPurchased(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                return yield sessionModel_1.default.find({ student_id: userId }).exec();
-            }
-            catch (error) {
-                throw new Error("Error retrieving sessions: " + error.message);
-            }
+            return this.SessionModel.find({ student_id: userId }).exec();
         });
     }
     getActiveSessions() {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                return yield sessionModel_1.default.find({ status: "SCHEDULED" }).exec();
-            }
-            catch (error) {
-                throw new Error("Error retrieving sessions: " + error.message);
-            }
+            return this.SessionModel.find({ status: "SCHEDULED" }).exec();
         });
     }
     updateSessionStatus(sessionId, newStatus) {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                // Find the session by ID and update the status
-                const updatedSession = yield sessionModel_1.default
-                    .findByIdAndUpdate(sessionId, { status: newStatus, updated_at: new Date() }, // Update status and timestamp
-                { new: true } // Return the updated session
-                )
-                    .exec();
-                if (!updatedSession) {
-                    throw new Error("Session not found");
-                }
-                return updatedSession;
-            }
-            catch (error) {
-                throw new Error("Error updating session status: " + error.message);
-            }
+            return this.SessionModel.findByIdAndUpdate(sessionId, { status: newStatus, updated_at: new Date() }, { new: true }).exec();
         });
     }
-    getAssigned(Instructoremail) {
+    getAssigned(instructorEmail) {
         return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const sessionData = yield sessionModel_1.default.find({
-                    instructor_email: Instructoremail,
-                });
-                return sessionData;
-            }
-            catch (error) {
-                throw new Error("Error finding sessions " + error.message);
-            }
+            return this.SessionModel.find({ instructor_email: instructorEmail }).exec();
         });
     }
 }
-exports.sessionRepository = sessionRepository;
+exports.SessionRepository = SessionRepository;

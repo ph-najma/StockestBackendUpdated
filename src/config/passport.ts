@@ -4,12 +4,11 @@ import {
   StrategyOptions,
 } from "passport-google-oauth20";
 import dotenv from "dotenv";
-import { AuthService } from "./authService";
+// import { AuthService } from "../auth/authService";
 import { IUser } from "../models/interfaces/userInterface";
-
+import { userService } from "../dependencyInjection";
+import { UserRepository } from "../repositories/userRepository";
 dotenv.config();
-
-const authService = new AuthService();
 
 const googleStrategyOptions: StrategyOptions = {
   clientID: process.env.GOOGLE_CLIENT_ID as string,
@@ -20,7 +19,7 @@ const googleStrategyOptions: StrategyOptions = {
 passport.use(
   new GoogleStrategy(googleStrategyOptions, async (_, __, profile, done) => {
     try {
-      const user = await authService.handleGoogleLogin(profile);
+      const user = await userService.handleGoogleLogin(profile);
       return done(null, user);
     } catch (err) {
       return done(err);
@@ -37,7 +36,7 @@ passport.serializeUser(((
 
 passport.deserializeUser(async (id: string, done) => {
   try {
-    const user = await authService.authRepository.findUserById(id);
+    const user = await userService.getUserProfile(id);
     done(null, user);
   } catch (err) {
     done(err);

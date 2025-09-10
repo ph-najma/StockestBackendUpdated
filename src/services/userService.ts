@@ -14,15 +14,17 @@ import { IpromotionRepsoitory } from "../repositories/interfaces/promotionRepoIn
 import { ISessionRepository } from "../repositories/interfaces/sessionRepoInterface";
 import { IOrderRepository } from "../repositories/interfaces/orderRepoInsterface";
 import { INotificationRepository } from "../repositories/interfaces/notificationRepoInterface";
-import { INotification } from "../interfaces/modelInterface";
+import { INotification } from "../models/interfaces/notificationInterface";
 import { ISession } from "../models/interfaces/sessionInterface";
 import { IStock } from "../models/interfaces/stockInterface";
 import { IPromotion } from "../models/interfaces/promotionInterface";
 import { IUser } from "../models/interfaces/userInterface";
 import { IWatchlist } from "../models/interfaces/watchlistInterface";
 import { ITransaction } from "../models/interfaces/transactionInterface";
-import { IUserService } from "../interfaces/serviceInterface";
 import { IOrder } from "../models/interfaces/orderInterface";
+import { ITradeDiary } from "../interfaces/Interfaces";
+import { isIOrder } from "../helper/helper";
+import { IUserService } from "./interfaces/userServiceInterface";
 type ObjectId = mongoose.Types.ObjectId;
 
 dotenv.config();
@@ -311,6 +313,49 @@ export class UserService implements IUserService {
   async getAllStocks() {
     return this.stockRepository.getAllStocks();
   }
+  async checkPortfolio(
+    userId: string,
+    stockId: string,
+    quantity: number,
+    type: "BUY" | "SELL"
+  ): Promise<{ success: boolean; message: string }> {
+    const user = await this.userRepository.findByIdWithPortfolio(userId);
+
+    if (!user) {
+      return { success: false, message: "User not found" };
+    }
+
+    if (type === "SELL") {
+      const portfolioItem = user.portfolio.find(
+        (item) => item.stockId.toString() === stockId
+      );
+
+      if (!portfolioItem || portfolioItem.quantity < quantity) {
+        return {
+          success: false,
+          message: "Insufficient stock in portfolio for this sell order",
+        };
+      }
+    }
+
+    return { success: true, message: "Portfolio check passed" };
+  }
+
+  async handleGoogleLogin(profile: any): Promise<IUser> {
+    const email = profile.emails?.[0]?.value;
+    if (!email) throw new Error("Email not found in Google profile");
+
+    let user = await this.userRepository.findUserByGoogleId(profile.id);
+    if (!user) {
+      user = await this.userRepository.save({
+        googleId: profile.id,
+        name: profile.displayName,
+        email,
+        profilePhoto: profile.photos?.[0]?.value,
+      });
+    }
+    return user;
+  }
 
   //Place an Order
   async placeOrder(
@@ -429,14 +474,104 @@ export class UserService implements IUserService {
       throw error;
     }
   }
-  async getTradeDiary(userId: string | undefined): Promise<any> {
-    try {
-      const tradeData = await this.transactionRepository.getTradeDiary(userId);
-      return tradeData;
-    } catch (error) {
-      throw error;
-    }
+  // async getTradeDiary(userId: string | undefined): Promise<any> {
+  //   try {
+  //     const tradeData = await this.transactionRepository.getTradeDiary(userId);
+  //     return tradeData;
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // }
+  async getTradeDiary(userId: string): Promise<ITradeDiary> {
+    const transactions = await this.transactionRepository.getTransactions(
+      userId,
+      0,
+      0
+    );
+
+    let totalTrades = 0;
+    let totalPnl = 0;
+    let totalCharges = 0;
+    let totalBrokerage = 0;
+    const tradeDetails: ITradeDiary["trades"] = [];
+
+    transactions.forEach((transaction) => {
+      const pnl =
+        transaction.type === "BUY"
+          ? transaction.price * transaction.quantity
+          : 0;
+      const charges = transaction.fees;
+      const brokerage = charges * 0.1;
+
+      totalTrades++;
+      totalPnl += pnl;
+      totalCharges += charges;
+      totalBrokerage += brokerage;
+
+      const date = transaction.createdAt.toISOString().split("T")[0];
+      const buyOrderPrice = isIOrder(transaction.buyOrder)
+        ? transaction.buyOrder.price
+        : 0;
+      const sellOrderPrice = isIOrder(transaction.sellOrder)
+        ? transaction.sellOrder.price
+        : 0;
+
+      let dailyTrade = tradeDetails.find((trade) => trade.date === date);
+      if (!dailyTrade) {
+        dailyTrade = {
+          date,
+          trades: 0,
+          overallPL: 0,
+          netPL: 0,
+          status: transaction.status,
+          details: [],
+        };
+        tradeDetails.push(dailyTrade);
+      }
+
+      dailyTrade.trades++;
+      dailyTrade.overallPL += pnl;
+      dailyTrade.netPL += pnl - charges - brokerage;
+      dailyTrade.details.push({
+        time: transaction.createdAt.toLocaleTimeString(),
+        type: transaction.type,
+        symbol: (transaction.stock as any)?.symbol ?? "Unknown",
+        quantity: transaction.quantity,
+        entry: buyOrderPrice,
+        exit: sellOrderPrice,
+        pnl,
+        notes: "Example trade note",
+      });
+    });
+
+    const winTrades = transactions.filter((transaction: ITransaction) => {
+      const buyOrderPrice = isIOrder(transaction.buyOrder)
+        ? transaction.buyOrder.price
+        : 0;
+      const sellOrderPrice = isIOrder(transaction.sellOrder)
+        ? transaction.sellOrder.price
+        : 0;
+      return transaction.type === "BUY" && sellOrderPrice > buyOrderPrice;
+    }).length;
+
+    const lossTrades = totalTrades - winTrades;
+    const winRate = (winTrades / totalTrades) * 100;
+    const averageWin = winTrades ? totalPnl / winTrades : 0;
+    const averageLoss = lossTrades ? totalPnl / lossTrades : 0;
+
+    return {
+      winRate,
+      averageWin,
+      averageLoss,
+      overallPL: totalPnl,
+      netPL: totalPnl - totalCharges - totalBrokerage,
+      totalTrades,
+      charges: totalCharges,
+      brokerage: totalBrokerage,
+      trades: tradeDetails,
+    };
   }
+
   async getActiveSessions(): Promise<ISession[] | null> {
     try {
       const sessionData = await this.sessionRepository.getActiveSessions();

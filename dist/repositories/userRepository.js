@@ -13,64 +13,77 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserRepository = void 0;
-const userModel_1 = __importDefault(require("../models/userModel"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const BaseRepository_1 = require("./BaseRepository");
 class UserRepository extends BaseRepository_1.BaseRepository {
-    constructor() {
-        super(userModel_1.default); // Pass the User model to the base repository
+    constructor(userModel) {
+        super(userModel);
+        this.userModel = userModel;
     }
     // Find user by email
     findByEmail(email) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield userModel_1.default.findOne({ email });
+            return yield this.userModel.findOne({ email }).exec();
         });
     }
     // Find user by OTP
     findByOtp(otp) {
         return __awaiter(this, void 0, void 0, function* () {
-            return userModel_1.default.findOne({ otp });
+            return this.userModel.findOne({ otp }).exec();
         });
     }
     //Find by ID
     findById(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield userModel_1.default.findById(userId).populate({
+            return yield this.userModel
+                .findById(userId)
+                .populate({
                 path: "portfolio.stockId",
                 model: "Stock",
-            });
+            })
+                .exec();
         });
     }
     // Save a new user
     save(userData) {
         return __awaiter(this, void 0, void 0, function* () {
             console.log(userData);
-            const user = new userModel_1.default(userData);
+            const user = new this.userModel(userData);
             return user.save();
+        });
+    }
+    findUserByGoogleId(googleId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return (yield this.userModel.findOne({ googleId }));
         });
     }
     // Update user data
     updateById(userId, updateData) {
         return __awaiter(this, void 0, void 0, function* () {
-            return userModel_1.default.findByIdAndUpdate(userId, updateData, { new: true });
+            return this.userModel.findByIdAndUpdate(userId, updateData, { new: true });
         });
     }
     // Update user password
     updatePassword(email, newPassword) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield userModel_1.default.findOne({ email });
+            const user = yield this.userModel.findOne({ email });
             if (user) {
                 user.password = newPassword;
                 yield user.save();
             }
         });
     }
+    findByIdWithPortfolio(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.userModel.findById(userId).populate("portfolio.stockId");
+        });
+    }
     // Find or create Google user
     findOrCreateGoogleUser(googleId, userData) {
         return __awaiter(this, void 0, void 0, function* () {
-            let user = yield userModel_1.default.findOne({ googleId });
+            let user = yield this.userModel.findOne({ googleId });
             if (!user) {
-                user = new userModel_1.default(userData);
+                user = new this.userModel(userData);
                 yield user.save();
             }
             return user;
@@ -78,20 +91,14 @@ class UserRepository extends BaseRepository_1.BaseRepository {
     }
     //Find an admin by email
     findAdminByEmail(email) {
-        const _super = Object.create(null, {
-            findOne: { get: () => super.findOne }
-        });
         return __awaiter(this, void 0, void 0, function* () {
-            return _super.findOne.call(this, { email, is_Admin: true });
+            return this.userModel.findOne({ email, is_Admin: true });
         });
     }
     //Find all users
     findAllUsers() {
-        const _super = Object.create(null, {
-            findAll: { get: () => super.findAll }
-        });
         return __awaiter(this, void 0, void 0, function* () {
-            return _super.findAll.call(this, { is_Admin: false });
+            return this.userModel.find({ is_Admin: false }).exec();
         });
     }
     //Save a user
@@ -100,33 +107,22 @@ class UserRepository extends BaseRepository_1.BaseRepository {
             return user.save();
         });
     }
-    // Fetch user by ID
-    // async updatePortfolio(
-    //   userId: string,
-    //   portfolioData: { stockId: string; quantity: number }
-    // ): Promise<IUser | null> {
-    //   return await this.model.findByIdAndUpdate(
-    //     userId,
-    //     { $push: { portfolio: portfolioData } },
-    //     { new: true }
-    //   );
-    // }
     // Fetch user balance
     getUserBalance(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield this.model.findById(userId);
+            const user = yield this.userModel.findById(userId);
             return (user === null || user === void 0 ? void 0 : user.balance) || null;
         });
     }
     // Update user balance
     updateUserBalance(userId, amount) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.model.findByIdAndUpdate(userId, { $inc: { balance: amount } }, { new: true });
+            return yield this.userModel.findByIdAndUpdate(userId, { $inc: { balance: amount } }, { new: true });
         });
     }
     addSignupBonus(userId, type) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield userModel_1.default.findById(userId);
+            const user = yield this.userModel.findById(userId);
             if (!user) {
                 throw new Error("User not found");
             }
@@ -142,7 +138,7 @@ class UserRepository extends BaseRepository_1.BaseRepository {
     }
     updatePortfolioAfterSell(userId, stockId, quantityToSell) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield this.model.findById(userId);
+            const user = yield this.userModel.findById(userId);
             if (!user)
                 throw new Error("User not found");
             // Check if the stock exists in the portfolio
@@ -166,18 +162,28 @@ class UserRepository extends BaseRepository_1.BaseRepository {
     }
     findByRefferalCode(refferalcode) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield userModel_1.default.findOne({ referralCode: refferalcode });
+            return yield this.userModel.findOne({ referralCode: refferalcode });
         });
     }
     getPromotions(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield userModel_1.default.findById(userId).exec();
+            const user = yield this.userModel.findById(userId).exec();
             return user;
         });
     }
     countUser() {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield userModel_1.default.countDocuments({ is_Admin: false }).exec();
+            return yield this.userModel.countDocuments({ is_Admin: false }).exec();
+        });
+    }
+    updatePortfolio(userId, stockId, isBuy, quantity) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (isBuy) {
+                return this.userModel.findOneAndUpdate({ _id: userId, "portfolio.stockId": stockId }, { $inc: { "portfolio.$.quantity": quantity } }, { new: true, upsert: true });
+            }
+            else {
+                return this.userModel.findOneAndUpdate({ _id: userId, "portfolio.stockId": stockId }, { $inc: { "portfolio.$.quantity": -quantity } }, { new: true });
+            }
         });
     }
 }

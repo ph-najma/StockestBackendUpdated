@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
-import { IAdminService } from "../interfaces/serviceInterface";
+import { IAdminService } from "../services/interfaces/adminServiceInterface";
 import Order from "../models/orderModel";
 import transactionModel from "../models/transactionModel";
 import { ILimitOrderQuery } from "../interfaces/Interfaces";
 import mongoose from "mongoose";
 import { HttpStatusCode } from "../interfaces/Interfaces";
 import { IAdminController } from "./interfaces/adminControllerInterface";
-import sendResponse from "../helper/helper";
+import { sendResponse } from "../helper/helper";
 import { MESSAGES } from "../helper/Message";
 
 export const ERROR_MESSAGES = {

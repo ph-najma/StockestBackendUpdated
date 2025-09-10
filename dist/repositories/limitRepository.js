@@ -8,20 +8,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.limitRepository = void 0;
-const limitModel_1 = __importDefault(require("../models/limitModel"));
 class limitRepository {
+    constructor(limitModel) {
+        this.limitModel = limitModel;
+    }
     updateLimit(limitData) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const limit = yield limitModel_1.default.findOneAndUpdate({}, limitData, {
+                const limit = yield this.limitModel
+                    .findOneAndUpdate({}, limitData, {
                     new: true,
                     upsert: true,
-                }).exec();
+                })
+                    .exec();
                 return limit;
             }
             catch (error) {
@@ -31,7 +32,7 @@ class limitRepository {
     }
     getLimits() {
         return __awaiter(this, void 0, void 0, function* () {
-            const limit = yield limitModel_1.default.findOne();
+            const limit = yield this.limitModel.findOne();
             return limit;
         });
     }

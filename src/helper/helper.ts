@@ -1,8 +1,9 @@
 import { Response } from "express";
+import { IOrder } from "../models/interfaces/orderInterface";
 
 import { HttpStatusCode } from "../interfaces/Interfaces";
 
-const sendResponse = <T>(
+export const sendResponse = <T>(
   res: Response,
   statusCode: HttpStatusCode,
   success: boolean,
@@ -12,5 +13,6 @@ const sendResponse = <T>(
 ) => {
   res.status(statusCode).json({ success, message, data, error });
 };
-
-export default sendResponse;
+export function isIOrder(order: any): order is IOrder {
+  return order && typeof order.price === "number";
+}

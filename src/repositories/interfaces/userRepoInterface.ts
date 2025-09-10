@@ -1,5 +1,5 @@
 import { IUser } from "../../models/interfaces/userInterface";
-import mongoose, { FilterQuery, UpdateQuery } from "mongoose";
+import mongoose, { FilterQuery, ObjectId, UpdateQuery, Types } from "mongoose";
 export interface IuserRepsitory {
   findByEmail(email: string): Promise<IUser | null>;
   findByOtp(otp: string): Promise<IUser | null>;
@@ -22,6 +22,8 @@ export interface IuserRepsitory {
     userId: string | undefined,
     amount: number
   ): Promise<IUser | null>;
+  findByIdWithPortfolio(userId: string): Promise<IUser | null>;
+  findUserByGoogleId(googleId: string): Promise<IUser | null>;
   updatePortfolioAfterSell(
     userId: string,
     stockId: string,
@@ -31,4 +33,10 @@ export interface IuserRepsitory {
   findByRefferalCode(refferalcode: string): Promise<IUser | null>;
   getPromotions(userId: string | undefined): Promise<IUser | null>;
   countUser(): Promise<number>;
+  updatePortfolio(
+    userId: Types.ObjectId,
+    stockId: string | ObjectId,
+    isBuy: boolean,
+    quantity: number
+  ): Promise<IUser | null>;
 }

@@ -1,4 +1,4 @@
-import { ILimit } from "../../interfaces/modelInterface";
+import { ILimit } from "../../models/interfaces/limitInterface";
 import mongoose, { FilterQuery, UpdateQuery } from "mongoose";
 export interface IBaseRepository<T> {
   findById(id: string | undefined): Promise<T | null>;

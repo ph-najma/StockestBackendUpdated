@@ -1,5 +1,5 @@
 import { ISession } from "../models/interfaces/sessionInterface";
-import { IPaymentService } from "../interfaces/serviceInterface";
+import { IPaymentService } from "./interfaces/paymentServiceInterface";
 
 import { IuserRepsitory } from "../repositories/interfaces/userRepoInterface";
 import { ISessionRepository } from "../repositories/interfaces/sessionRepoInterface";

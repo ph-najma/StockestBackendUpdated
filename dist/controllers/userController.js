@@ -14,11 +14,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserController = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
+const passport_1 = __importDefault(require("../config/passport"));
+// import Stock from "../models/stockModel";
 const generative_ai_1 = require("@google/generative-ai");
 const Interfaces_1 = require("../interfaces/Interfaces");
 const multer_1 = __importDefault(require("multer"));
 const aws_sdk_1 = __importDefault(require("aws-sdk"));
-const helper_1 = __importDefault(require("../helper/helper"));
+const helper_1 = require("../helper/helper");
 const userModel_1 = __importDefault(require("../models/userModel"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const Message_1 = require("../helper/Message");
@@ -36,10 +38,10 @@ class UserController {
             const { name, email, password, role } = req.body;
             try {
                 yield this.userService.signup(name, email, password, role);
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.LOGIN_SUCCESS, email);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.LOGIN_SUCCESS, email);
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         //verify OTP
@@ -47,10 +49,10 @@ class UserController {
             const { otp } = req.body;
             try {
                 const result = yield this.userService.verifyOtp(otp);
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.OTP_VERIFY, result);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.OTP_VERIFY, result);
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         //Resend OTP
@@ -58,10 +60,10 @@ class UserController {
             const { email } = req.body;
             try {
                 const message = yield this.userService.resendOtp(email);
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.OTP_RESEND, message);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.OTP_RESEND, message);
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         //Login
@@ -69,10 +71,10 @@ class UserController {
             const { email, password } = req.body;
             try {
                 const result = yield this.userService.login(email, password);
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.LOGIN_SUCCESS, result);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.LOGIN_SUCCESS, result);
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         //Forgot Password
@@ -80,10 +82,10 @@ class UserController {
             const { email } = req.body;
             try {
                 yield this.userService.forgotPassword(email);
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.OTP_SENT, email);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.OTP_SENT, email);
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         //Reset Password
@@ -91,29 +93,44 @@ class UserController {
             const { email, otp, newPassword } = req.body;
             try {
                 yield this.userService.resetPassword(email, otp, newPassword);
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.PASSWORD_RESET, email);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.PASSWORD_RESET, email);
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         this.getStockList = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const stocks = yield this.userService.getAllStocks();
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.STOCK_LIST, stocks);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.STOCK_LIST, stocks);
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         //User Profile
         this.getUserProfile = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const user = yield this.userService.getUserProfile(req.userId);
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.USER_PROFILE, user);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.USER_PROFILE, user);
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+            }
+        });
+        this.checkPortfolio = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { userId, stockId, quantity, type } = req.body;
+                const result = yield this.userService.checkPortfolio(userId, stockId, quantity, type);
+                if (!result.success) {
+                    res.status(400).json({ message: result.message });
+                    return;
+                }
+                res.status(200).json({ message: result.message });
+            }
+            catch (error) {
+                console.error("Error checking portfolio:", error);
+                res.status(500).json({ message: "Internal server error" });
             }
         });
         //User Portfolio
@@ -127,10 +144,10 @@ class UserController {
                     return;
                 }
                 const portfolioData = yield this.userService.getUpdatedPortfolio(user);
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.USER_PORTFOLIO, portfolioData);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.USER_PORTFOLIO, portfolioData);
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         //placeOrder
@@ -141,10 +158,10 @@ class UserController {
                     ? new mongoose_1.default.Types.ObjectId(req.userId)
                     : undefined;
                 const order = yield this.userService.placeOrder(user, stock, type, orderType, quantity, price, stopPrice, isIntraday);
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.PLACE_ORDER, order);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.PLACE_ORDER, order);
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         //Get Watchlist
@@ -152,10 +169,10 @@ class UserController {
             try {
                 const userId = req.userId;
                 const watchlist = yield this.userService.getWatchlist(userId);
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.WATCHLIST, watchlist);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.WATCHLIST, watchlist);
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         //Transaction
@@ -165,20 +182,20 @@ class UserController {
                 const limit = parseInt(req.query.limit, 10) || 10;
                 const skip = (page - 1) * limit;
                 const transactions = yield this.userService.getTransactions(req.userId, skip, limit);
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.TRANSACTIONS_RETRIEVED, transactions);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.TRANSACTIONS_RETRIEVED, transactions);
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         this.updatePortfolioAfterSell = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const { userId, stockId, quantityToSell } = req.body;
                 const updatedData = yield this.userService.updatePortfolioAfterSell(userId, stockId, quantityToSell);
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.PORTFOLIO_UPDATION, updatedData);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.PORTFOLIO_UPDATION, updatedData);
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         this.ensureWatchlistAndAddStock = (req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -188,10 +205,10 @@ class UserController {
                 const { stocks } = req.body;
                 const stockId = (_a = stocks[0]) === null || _a === void 0 ? void 0 : _a.stockId;
                 const updatedWathclist = yield this.userService.ensureWatchlistAndAddStock(userId, stockId);
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.ADD_TO_WATCHLIST, updatedWathclist);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.ADD_TO_WATCHLIST, updatedWathclist);
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         this.getStockData = (req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -199,10 +216,10 @@ class UserController {
                 const symbol = req.query.symbol;
                 const updatedSymbol = symbol === null || symbol === void 0 ? void 0 : symbol.toString();
                 const stockData = yield this.userService.getStockData(updatedSymbol);
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.STOCK_LIST, stockData);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.STOCK_LIST, stockData);
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         this.getHistorical = (req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -210,10 +227,10 @@ class UserController {
                 const symbol = req.query.symbol;
                 const updatedSymbol = symbol === null || symbol === void 0 ? void 0 : symbol.toString();
                 const stockData = yield this.userService.getHistorical(updatedSymbol);
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.STOCK_HISTORY, stockData);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.STOCK_HISTORY, stockData);
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         this.getOrders = (req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -224,7 +241,7 @@ class UserController {
                 const skip = (page - 1) * limit;
                 const totalOrders = yield this.userService.countOrders(userId);
                 const orders = yield this.userService.getOrders(userId, skip, limit);
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.ALL_ORDERS, {
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.ALL_ORDERS, {
                     orders,
                     totalOrders,
                     currentPage: page,
@@ -232,56 +249,56 @@ class UserController {
                 });
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         this.getPromotions = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const userId = req.userId;
                 const user = yield this.userService.getUserProfileWithRewards(userId);
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.USER_PROMOTION, user);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.USER_PROMOTION, user);
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         this.getTradeDiary = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const userId = req.userId;
                 const tradeData = yield this.userService.getTradeDiary(userId);
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.TRADE_DIARY_DATA, tradeData);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.TRADE_DIARY_DATA, tradeData);
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         this.getActiveSessions = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const sessionData = yield this.userService.getActiveSessions();
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.ACTIVE_SESSIONS, sessionData);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.ACTIVE_SESSIONS, sessionData);
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         this.getPurchased = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const userId = req.userId;
                 const sessionData = yield this.userService.getPurchased(userId);
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.PURCHASED_SESSIONS, sessionData);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.PURCHASED_SESSIONS, sessionData);
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         this.getAssigned = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const intructorId = req.userId;
                 const sessionData = yield this.userService.getAssignedSession(intructorId);
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.ASSIGNED_SESSIONS, sessionData);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.ASSIGNED_SESSIONS, sessionData);
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         this.getBySearch = (req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -299,10 +316,10 @@ class UserController {
                 if (maxPrice)
                     query.price = Object.assign(Object.assign({}, query.price), { $lte: parseFloat(maxPrice) });
                 const stocks = yield this.userService.getBySearch(query);
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.SEARCH_RESULT, stocks);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.SEARCH_RESULT, stocks);
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         this.generate = (req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -325,7 +342,7 @@ class UserController {
                 res.json({ response: result.response.text() });
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         this.refreshToken = (req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -337,10 +354,10 @@ class UserController {
                         .json({ error: "Refresh token is required." });
                 }
                 const newToken = yield this.userService.refreshToken(refreshToken);
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.REFRESH_TOKEN, newToken);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.REFRESH_TOKEN, newToken);
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         this.getSignedUrl = (req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -363,7 +380,7 @@ class UserController {
                 });
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         this.saveProfile = (req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -378,20 +395,34 @@ class UserController {
                 res.json({ message: "Profile updated successfully", user });
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         this.getNotifications = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const userId = req.userId;
                 const notificationData = yield this.userService.getNotifications(userId);
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.PURCHASED_SESSIONS, notificationData);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.PURCHASED_SESSIONS, notificationData);
             }
             catch (error) {
-                (0, helper_1.default)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
         this.userService = userService;
+    }
+    googleAuth(req, res, next) {
+        passport_1.default.authenticate("google", { scope: ["profile", "email"] })(req, res, next);
+    }
+    googleCallback(req, res, next) {
+        passport_1.default.authenticate("google", {
+            failureRedirect: "/",
+            successRedirect: "/home",
+        })(req, res, next);
+    }
+    logout(req, res) {
+        req.logout(() => {
+            res.redirect("/");
+        });
     }
 }
 exports.UserController = UserController;

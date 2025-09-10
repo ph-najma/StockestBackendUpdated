@@ -8,14 +8,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.watchlistRepostory = void 0;
-const watchlistModel_1 = __importDefault(require("../models/watchlistModel"));
-const stockModel_1 = __importDefault(require("../models/stockModel"));
-class watchlistRepostory {
+exports.WatchlistRepostory = void 0;
+class WatchlistRepostory {
+    constructor(watchlistModel) {
+        this.watchlistModel = watchlistModel;
+    }
     getByUserId(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!userId) {
@@ -23,20 +21,13 @@ class watchlistRepostory {
                 return null;
             }
             // Fetch the watchlist
-            const watchlist = yield watchlistModel_1.default.findOne({ user: userId });
+            const watchlist = yield this.watchlistModel
+                .findOne({ user: userId })
+                .lean();
             if (!watchlist) {
                 return null;
             }
-            const uniqueStockSymbols = [
-                ...new Set(watchlist.stocks.map((stock) => stock.symbol)),
-            ];
-            const stockDataPromises = uniqueStockSymbols.map((symbol) => stockModel_1.default.findOne({ symbol })
-                .sort({ timestamp: -1 })
-                .select("symbol price change volume timestamp")
-                .lean());
-            const stockData = yield Promise.all(stockDataPromises);
-            const enrichedWatchlist = Object.assign(Object.assign({}, watchlist.toObject()), { stocks: stockData.filter((data) => data) });
-            return enrichedWatchlist;
+            return watchlist;
         });
     }
     ensureWatchlistAndAddStock(userId, stockSymbol) {
@@ -44,7 +35,7 @@ class watchlistRepostory {
             if (!userId) {
                 throw new Error("User ID is required.");
             }
-            let watchlist = yield watchlistModel_1.default.findOne({ user: userId });
+            let watchlist = yield this.watchlistModel.findOne({ user: userId });
             if (watchlist) {
                 const stockExists = watchlist.stocks.some((stock) => stock.symbol === stockSymbol);
                 if (!stockExists) {
@@ -53,7 +44,7 @@ class watchlistRepostory {
                 }
             }
             else {
-                watchlist = new watchlistModel_1.default({
+                watchlist = new this.watchlistModel({
                     user: userId,
                     stocks: [{ symbol: stockSymbol, addedAt: new Date() }],
                 });
@@ -63,4 +54,4 @@ class watchlistRepostory {
         });
     }
 }
-exports.watchlistRepostory = watchlistRepostory;
+exports.WatchlistRepostory = WatchlistRepostory;
