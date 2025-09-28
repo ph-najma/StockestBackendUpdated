@@ -2,15 +2,14 @@ import { Server } from "socket.io";
 import http from "http";
 import app from "./app";
 import { v4 as uuidv4 } from "uuid";
-import { StockRepository } from "./repositories/stockRepository";
 import jwt from "jsonwebtoken";
+import { StockRepository } from "./repositories/stockRepository";
 import { UserRepository } from "./repositories/userRepository";
 import { TransactionRepository } from "./repositories/transactionRepository";
 import { OrderRepository } from "./repositories/orderRepository";
 import { PromotionRepository } from "./repositories/promotionRepository";
 import { WatchlistRepostory } from "./repositories/watchlistRepsoitory";
 import { NotificationRepository } from "./repositories/notificationRepository";
-import User from "./models/userModel";
 import { SessionRepository } from "./repositories/sessionRepository";
 import { IUserService } from "./services/interfaces/userServiceInterface";
 import { UserService } from "./services/userService";
@@ -22,6 +21,7 @@ import watchlistModel from "./models/watchlistModel";
 import sessionModel from "./models/sessionModel";
 import notificationModel from "./models/notificationModel";
 import transactionModel from "./models/transactionModel";
+import User from "./models/userModel";
 
 const userRepository = new UserRepository(userModel);
 const stockRepository = new StockRepository(stockModel);
@@ -32,12 +32,11 @@ const watchlistRepository = new WatchlistRepostory(watchlistModel);
 const sessionRepsoitory = new SessionRepository(sessionModel);
 const notificationRepository = new NotificationRepository(notificationModel);
 const stockrepository = new StockRepository(stockModel);
-
 const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:4200",
+    origin: process.env.FRONTEND_URL || "http://localhost:4200",
     methods: ["GET", "POST"],
   },
 });

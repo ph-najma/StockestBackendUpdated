@@ -154,6 +154,7 @@ class UserController {
         this.placeOrder = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const { stock, type, orderType, quantity, price, stopPrice, isIntraday } = req.body;
+                console.log(stock);
                 const user = req.userId
                     ? new mongoose_1.default.Types.ObjectId(req.userId)
                     : undefined;

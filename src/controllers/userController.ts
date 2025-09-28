@@ -261,6 +261,7 @@ export class UserController implements IUserController {
     try {
       const { stock, type, orderType, quantity, price, stopPrice, isIntraday } =
         req.body;
+      console.log(stock);
       const user = req.userId
         ? new mongoose.Types.ObjectId(req.userId)
         : undefined;
