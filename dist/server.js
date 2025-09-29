@@ -45,7 +45,6 @@ const app_1 = __importDefault(require("./app"));
 const uuid_1 = require("uuid");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-(0, db_1.default)();
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const stockRepository_1 = require("./repositories/StockRepository");
 const userRepository_1 = require("./repositories/userRepository");
