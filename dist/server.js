@@ -43,6 +43,7 @@ const socket_io_1 = require("socket.io");
 const http_1 = __importDefault(require("http"));
 const app_1 = __importDefault(require("./app"));
 const uuid_1 = require("uuid");
+const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 (0, db_1.default)();
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
