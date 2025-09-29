@@ -22,7 +22,8 @@ import sessionModel from "./models/sessionModel";
 import notificationModel from "./models/notificationModel";
 import transactionModel from "./models/transactionModel";
 import User from "./models/userModel";
-
+import dotenv from "dotenv";
+dotenv.config();
 const userRepository = new UserRepository(userModel);
 const stockRepository = new StockRepository(stockModel);
 const transactionRepository = new TransactionRepository(transactionModel);
