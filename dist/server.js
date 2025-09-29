@@ -43,6 +43,8 @@ const socket_io_1 = require("socket.io");
 const http_1 = __importDefault(require("http"));
 const app_1 = __importDefault(require("./app"));
 const uuid_1 = require("uuid");
+dotenv_1.default.config();
+(0, db_1.default)();
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const stockRepository_1 = require("./repositories/StockRepository");
 const userRepository_1 = require("./repositories/userRepository");
@@ -95,7 +97,7 @@ const stockrepository = new stockRepository_1.StockRepository(
 const server = http_1.default.createServer(app_1.default);
 const io = new socket_io_1.Server(server, {
   cors: {
-    origin: "http://localhost:4200",
+    origin: process.env.FRONTEND_URL || "http://localhost:4200",
     methods: ["GET", "POST"],
   },
 });
