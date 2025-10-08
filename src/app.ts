@@ -11,7 +11,7 @@ import cron from "node-cron";
 import { SquareOffService } from "./services/squareOffService";
 // import { newOrderRepository } from "./repositories/newOrder";
 import { fetchStockRepository } from "./repositories/fetchStock";
-import { orderMatchingService } from "./dependencyInjection";
+import { getOrderMatchingService } from "./dependencyInjection";
 import morgan from "morgan";
 import { createStream } from "rotating-file-stream";
 import path from "path";
@@ -65,8 +65,8 @@ app.use(passport.session());
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:4200",
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    origin: ["http://localhost:4200"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
 );
@@ -85,7 +85,7 @@ app.use((req, res, next) => {
 cron.schedule("* * * * *", async () => {
   console.log("Running order matching...");
   try {
-    await orderMatchingService.matchOrders();
+    await getOrderMatchingService().matchOrders();
     console.log("Order matching completed.");
   } catch (error) {
     console.error("Error while matching orders:", error);

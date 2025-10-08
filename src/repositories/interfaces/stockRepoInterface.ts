@@ -15,4 +15,5 @@ export interface IStockRepository {
   getStockData(symbol: string | undefined): Promise<IStock[]>;
   searchStocks(query: Partial<IStock>): Promise<IStock[]>;
   save(stock: any): Promise<any>;
+  findBySymbol(symbol: string): Promise<IStock | null>;
 }

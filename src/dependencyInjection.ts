@@ -16,6 +16,7 @@ import { PromotionRepository } from "./repositories/promotionRepository";
 import { SessionRepository } from "./repositories/sessionRepository";
 import { WatchlistRepostory } from "./repositories/watchlistRepsoitory";
 import { PaymentRepository } from "./repositories/paymentRepository";
+import { UploadRepository } from "./repositories/uploadRepository";
 // models
 import userModel from "./models/userModel";
 import stockModel from "./models/stockModel";
@@ -29,20 +30,24 @@ import { IOrder } from "./models/interfaces/orderInterface";
 import { Model } from "mongoose";
 import { NotificationRepository } from "./repositories/notificationRepository";
 import notificationModel from "./models/notificationModel";
-import { io } from "./server";
+// Avoid circular import with `server.ts`. We'll inject io from server at runtime.
+let injectedIo: Server | null = null;
+export const setIo = (ioInstance: Server) => {
+  injectedIo = ioInstance;
+};
 
 // ---------- Repositories ----------
 const userRepository = new UserRepository(userModel);
 const limitRepo = new limitRepository(Limit);
 const orderRepository = new OrderRepository(orderModel as Model<IOrder>);
-const stockRepository = new StockRepository(stockModel);
+export const stockRepository = new StockRepository(stockModel);
 const promotionRepository = new PromotionRepository(promotionModel);
 const transactionRepository = new TransactionRepository(transactionModel);
 const sessionRepository = new SessionRepository(sessionModel);
 const watchlistRepsoitory = new WatchlistRepostory(Watchlist);
 const notificationRepository = new NotificationRepository(notificationModel);
 const paymentRepository = new PaymentRepository();
-
+const uploadRepository = new UploadRepository();
 // ---------- Services ----------
 const adminService = new AdminService(
   userRepository,
@@ -61,22 +66,33 @@ export const userService = new UserService(
   promotionRepository,
   watchlistRepsoitory,
   sessionRepository,
-  notificationRepository
+  notificationRepository,
+  uploadRepository
 );
 const paymentService = new PaymentService(
   paymentRepository,
   userRepository,
   sessionRepository
 );
-
-export const orderMatchingService = new OrderMatchingService(
-  orderRepository,
-  stockRepository,
-  userRepository,
-  transactionRepository,
-  notificationRepository,
-  io
-);
+// Lazily provide OrderMatchingService once io has been injected by server
+let cachedOrderMatchingService: OrderMatchingService | null = null;
+export const getOrderMatchingService = (): OrderMatchingService => {
+  if (cachedOrderMatchingService) return cachedOrderMatchingService;
+  if (!injectedIo) {
+    throw new Error(
+      "Socket.IO instance not set. Call setIo(io) from server before using orderMatchingService."
+    );
+  }
+  cachedOrderMatchingService = new OrderMatchingService(
+    orderRepository,
+    stockRepository,
+    userRepository,
+    transactionRepository,
+    notificationRepository,
+    injectedIo
+  );
+  return cachedOrderMatchingService;
+};
 export const paymentController = new PaymentController(paymentService);
 export const adminController = new AdminController(adminService);
 export const userController = new UserController(userService);

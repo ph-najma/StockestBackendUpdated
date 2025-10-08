@@ -21,7 +21,6 @@ const Interfaces_1 = require("../interfaces/Interfaces");
 const multer_1 = __importDefault(require("multer"));
 const aws_sdk_1 = __importDefault(require("aws-sdk"));
 const helper_1 = require("../helper/helper");
-const userModel_1 = __importDefault(require("../models/userModel"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const Message_1 = require("../helper/Message");
 dotenv_1.default.config();
@@ -176,6 +175,18 @@ class UserController {
                 (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
+        //get Money details
+        this.getMoneyDetails = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const userId = req.userId;
+                const result = yield this.userService.getMoneyDetails(req.userId);
+                console.log(result);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.MONEY, result);
+            }
+            catch (error) {
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+            }
+        });
         //Transaction
         this.getTransaction = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
@@ -212,12 +223,51 @@ class UserController {
                 (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
             }
         });
+        this.removeStockFromWathclist = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const userId = req.userId;
+                const { symbol } = req.body;
+                console.log(req.body);
+                if (!symbol) {
+                    return (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, "Stock symbol is required", null);
+                }
+                const result = yield this.userService.RemoveStockFromWathclist(userId, symbol);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.MONEY, result);
+            }
+            catch (error) {
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+            }
+        });
         this.getStockData = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const symbol = req.query.symbol;
                 const updatedSymbol = symbol === null || symbol === void 0 ? void 0 : symbol.toString();
                 const stockData = yield this.userService.getStockData(updatedSymbol);
                 (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.STOCK_LIST, stockData);
+            }
+            catch (error) {
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+            }
+        });
+        this.getAuthParams = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const authParams = yield this.userService.getAuthParams();
+                console.log(authParams);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.STOCK_LIST, authParams);
+            }
+            catch (error) {
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
+            }
+        });
+        this.uploadFile = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const file = req.file;
+                if (!file) {
+                    res.status(400).json({ message: "No file provided" });
+                    return;
+                }
+                const result = yield this.userService.uploadImage(file.buffer, file.originalname);
+                (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.OK, true, Message_1.MESSAGES.STOCK_LIST, result);
             }
             catch (error) {
                 (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);
@@ -386,14 +436,10 @@ class UserController {
         });
         this.saveProfile = (req, res) => __awaiter(this, void 0, void 0, function* () {
             const userId = req.userId;
-            const user = yield userModel_1.default.findById(userId);
-            const email = user === null || user === void 0 ? void 0 : user.email;
-            console.log(email);
             const { profileImageUrl } = req.body;
-            console.log(profileImageUrl);
             try {
-                const user = yield userModel_1.default.findOneAndUpdate({ email }, { profilePhoto: profileImageUrl }, { new: true, upsert: true });
-                res.json({ message: "Profile updated successfully", user });
+                const updatedUser = yield this.userService.updateProfilePhoto(userId, profileImageUrl);
+                res.json({ message: "Profile updated successfully", user: updatedUser });
             }
             catch (error) {
                 (0, helper_1.sendResponse)(res, Interfaces_1.HttpStatusCode.BAD_REQUEST, false, error.message, null, error);

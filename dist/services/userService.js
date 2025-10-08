@@ -24,7 +24,7 @@ const helper_1 = require("../helper/helper");
 dotenv_1.default.config();
 const otpStore = new Map();
 class UserService {
-    constructor(stockRepository, userRepository, transactionRepository, orderRepository, promotionRepository, watchlistRepsoitory, sessionRepository, notificationRepository) {
+    constructor(stockRepository, userRepository, transactionRepository, orderRepository, promotionRepository, watchlistRepsoitory, sessionRepository, notificationRepository, uploadRepository) {
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
         this.transactionRepository = transactionRepository;
@@ -33,6 +33,7 @@ class UserService {
         this.watchlistRepository = watchlistRepsoitory;
         this.sessionRepository = sessionRepository;
         this.notificationRepository = notificationRepository;
+        this.uploadRepository = uploadRepository;
     }
     // Sign up a new user
     signup(name, email, password, role, referralCode) {
@@ -52,6 +53,16 @@ class UserService {
                 refferedBy: referralCode,
             });
             yield (0, sendEmail_1.sendEmail)(email, "Your OTP for user verification", `Your OTP is ${otp}. Please enter this code to verify your account.`);
+        });
+    }
+    updateProfilePhoto(userId, profileImageUrl) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!userId)
+                return null;
+            const updated = yield this.userRepository.updateById(userId, {
+                profilePhoto: profileImageUrl,
+            });
+            return updated;
         });
     }
     // Verify OTP
@@ -123,6 +134,18 @@ class UserService {
             });
             yield (0, sendEmail_1.sendEmail)(email, "Your OTP for user verification", `Your OTP is ${newOtp}. Please enter this code to verify your account.`);
             return "OTP resent to email";
+        });
+    }
+    getAuthParams() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.uploadRepository.generateAuthParameters();
+        });
+    }
+    uploadImage(fileBuffer, fileName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!fileBuffer || !fileName)
+                throw new Error("Invalid file data");
+            return yield this.uploadRepository.uploadImage(fileBuffer, fileName);
         });
     }
     // Login user
@@ -295,6 +318,29 @@ class UserService {
             return yield this.stockRepository.getStockById(userId);
         });
     }
+    //Get Money details
+    getMoneyDetails(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield this.userRepository.findById(userId);
+            if (!user) {
+                throw new Error("User not found");
+            }
+            let totalValue = 0;
+            for (const item of user.portfolio) {
+                const stock = item.stockId;
+                totalValue += stock.price * item.quantity;
+            }
+            // Margin Used
+            const marginUsed = Math.max(0, totalValue - user.balance);
+            // Utilization %
+            const utilization = user.balance > 0 ? (marginUsed / user.balance) * 100 : 0;
+            return {
+                available: user.balance,
+                marginUsed,
+                utilization,
+            };
+        });
+    }
     getWatchlist(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield this.watchlistRepository.getByUserId(userId);
@@ -314,6 +360,11 @@ class UserService {
     ensureWatchlistAndAddStock(userId, stocksymbol) {
         return __awaiter(this, void 0, void 0, function* () {
             return this.watchlistRepository.ensureWatchlistAndAddStock(userId, stocksymbol);
+        });
+    }
+    RemoveStockFromWathclist(userId, stocksymbol) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.watchlistRepository.removeStockFromWatchlist(userId, stocksymbol);
         });
     }
     getStockData(symbol) {

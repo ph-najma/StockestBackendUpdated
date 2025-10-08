@@ -10,7 +10,6 @@ import { IUserController } from "./interfaces/userControllerInterface";
 import multer from "multer";
 import AWS from "aws-sdk";
 import { sendResponse } from "../helper/helper";
-import User from "../models/userModel";
 import dotenv from "dotenv";
 import { MESSAGES } from "../helper/Message";
 
@@ -306,6 +305,28 @@ export class UserController implements IUserController {
       );
     }
   };
+  //get Money details
+  public getMoneyDetails = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const userId = req.userId;
+
+      const result = await this.userService.getMoneyDetails(req.userId);
+      console.log(result);
+      sendResponse(res, HttpStatusCode.OK, true, MESSAGES.MONEY, result);
+    } catch (error: any) {
+      sendResponse(
+        res,
+        HttpStatusCode.BAD_REQUEST,
+        false,
+        error.message,
+        null,
+        error
+      );
+    }
+  };
 
   //Transaction
   public getTransaction = async (
@@ -371,6 +392,7 @@ export class UserController implements IUserController {
       );
     }
   };
+
   public ensureWatchlistAndAddStock = async (
     req: Request,
     res: Response
@@ -391,6 +413,41 @@ export class UserController implements IUserController {
         MESSAGES.ADD_TO_WATCHLIST,
         updatedWathclist
       );
+    } catch (error: any) {
+      sendResponse(
+        res,
+        HttpStatusCode.BAD_REQUEST,
+        false,
+        error.message,
+        null,
+        error
+      );
+    }
+  };
+  public removeStockFromWathclist = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    try {
+      const userId = req.userId;
+      const { symbol } = req.body;
+      console.log(req.body);
+      if (!symbol) {
+        return sendResponse(
+          res,
+          HttpStatusCode.BAD_REQUEST,
+          false,
+          "Stock symbol is required",
+          null
+        );
+      }
+
+      const result = await this.userService.RemoveStockFromWathclist(
+        userId,
+        symbol
+      );
+
+      sendResponse(res, HttpStatusCode.OK, true, MESSAGES.MONEY, result);
     } catch (error: any) {
       sendResponse(
         res,
@@ -425,6 +482,55 @@ export class UserController implements IUserController {
       );
     }
   };
+  public getAuthParams = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const authParams = await this.userService.getAuthParams();
+      console.log(authParams);
+
+      sendResponse(
+        res,
+        HttpStatusCode.OK,
+        true,
+        MESSAGES.STOCK_LIST,
+        authParams
+      );
+    } catch (error: any) {
+      sendResponse(
+        res,
+        HttpStatusCode.BAD_REQUEST,
+        false,
+        error.message,
+        null,
+        error
+      );
+    }
+  };
+
+  public uploadFile = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const file = req.file;
+      if (!file) {
+        res.status(400).json({ message: "No file provided" });
+        return;
+      }
+
+      const result = await this.userService.uploadImage(
+        file.buffer,
+        file.originalname
+      );
+      sendResponse(res, HttpStatusCode.OK, true, MESSAGES.STOCK_LIST, result);
+    } catch (error: any) {
+      sendResponse(
+        res,
+        HttpStatusCode.BAD_REQUEST,
+        false,
+        error.message,
+        null,
+        error
+      );
+    }
+  };
+
   public getHistorical = async (req: Request, res: Response): Promise<void> => {
     try {
       const symbol = req.query.symbol;
@@ -720,19 +826,13 @@ export class UserController implements IUserController {
 
   public saveProfile = async (req: Request, res: Response): Promise<void> => {
     const userId = req.userId;
-    const user = await User.findById(userId);
-    const email = user?.email;
-    console.log(email);
     const { profileImageUrl } = req.body;
-    console.log(profileImageUrl);
     try {
-      const user = await User.findOneAndUpdate(
-        { email },
-        { profilePhoto: profileImageUrl },
-        { new: true, upsert: true }
+      const updatedUser = await (this.userService as any).updateProfilePhoto(
+        userId,
+        profileImageUrl
       );
-
-      res.json({ message: "Profile updated successfully", user });
+      res.json({ message: "Profile updated successfully", user: updatedUser });
     } catch (error: any) {
       sendResponse(
         res,

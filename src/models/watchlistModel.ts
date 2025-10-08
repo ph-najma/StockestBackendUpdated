@@ -13,7 +13,7 @@ const watchlistSchema = new Schema<IWatchlist>({
   },
   stocks: [
     {
-      symbol: { type: String, required: true },
+      symbol: { type: String },
       addedAt: { type: Date, default: Date.now },
     },
   ],

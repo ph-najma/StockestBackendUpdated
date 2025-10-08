@@ -68,7 +68,8 @@ app.use((0, express_session_1.default)({
 app.use(passport_1.default.initialize());
 app.use(passport_1.default.session());
 app.use((0, cors_1.default)({
-    origin: process.env.FRONTEND_URL || "http://localhost:4200",
+    origin: ["http://localhost:4200"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
 }));
 app.use(express_1.default.json());
@@ -84,7 +85,7 @@ app.use((req, res, next) => {
 node_cron_1.default.schedule("* * * * *", () => __awaiter(void 0, void 0, void 0, function* () {
     console.log("Running order matching...");
     try {
-        yield dependencyInjection_1.orderMatchingService.matchOrders();
+        yield (0, dependencyInjection_1.getOrderMatchingService)().matchOrders();
         console.log("Order matching completed.");
     }
     catch (error) {

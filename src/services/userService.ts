@@ -25,6 +25,7 @@ import { IOrder } from "../models/interfaces/orderInterface";
 import { ITradeDiary } from "../interfaces/Interfaces";
 import { isIOrder } from "../helper/helper";
 import { IUserService } from "./interfaces/userServiceInterface";
+import { IUploadRepository } from "../repositories/interfaces/IUploadRepository";
 type ObjectId = mongoose.Types.ObjectId;
 
 dotenv.config();
@@ -40,6 +41,7 @@ export class UserService implements IUserService {
   private watchlistRepository: IWatchlistRepository;
   private sessionRepository: ISessionRepository;
   private notificationRepository: INotificationRepository;
+  private uploadRepository: IUploadRepository;
 
   constructor(
     stockRepository: IStockRepository,
@@ -49,7 +51,8 @@ export class UserService implements IUserService {
     promotionRepository: IpromotionRepsoitory,
     watchlistRepsoitory: IWatchlistRepository,
     sessionRepository: ISessionRepository,
-    notificationRepository: INotificationRepository
+    notificationRepository: INotificationRepository,
+    uploadRepository: IUploadRepository
   ) {
     this.userRepository = userRepository;
     this.orderRepository = orderRepository;
@@ -59,6 +62,7 @@ export class UserService implements IUserService {
     this.watchlistRepository = watchlistRepsoitory;
     this.sessionRepository = sessionRepository;
     this.notificationRepository = notificationRepository;
+    this.uploadRepository = uploadRepository;
   }
 
   // Sign up a new user
@@ -89,6 +93,17 @@ export class UserService implements IUserService {
       "Your OTP for user verification",
       `Your OTP is ${otp}. Please enter this code to verify your account.`
     );
+  }
+
+  async updateProfilePhoto(
+    userId: string | undefined,
+    profileImageUrl: string
+  ): Promise<IUser | null> {
+    if (!userId) return null;
+    const updated = await this.userRepository.updateById(userId as any, {
+      profilePhoto: profileImageUrl,
+    });
+    return updated;
   }
 
   // Verify OTP
@@ -178,7 +193,13 @@ export class UserService implements IUserService {
 
     return "OTP resent to email";
   }
-
+  async getAuthParams(): Promise<any> {
+    return this.uploadRepository.generateAuthParameters();
+  }
+  async uploadImage(fileBuffer: Buffer, fileName: string): Promise<any> {
+    if (!fileBuffer || !fileName) throw new Error("Invalid file data");
+    return await this.uploadRepository.uploadImage(fileBuffer, fileName);
+  }
   // Login user
   async login(
     email: string,
@@ -401,6 +422,32 @@ export class UserService implements IUserService {
   async getStockById(userId: string | undefined): Promise<IStock | null> {
     return await this.stockRepository.getStockById(userId);
   }
+  //Get Money details
+  async getMoneyDetails(userId: string | undefined): Promise<any> {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+    let totalValue = 0;
+    for (const item of user.portfolio) {
+      const stock = item.stockId as any;
+
+      totalValue += stock.price * item.quantity;
+    }
+
+    // Margin Used
+    const marginUsed = Math.max(0, totalValue - user.balance);
+
+    // Utilization %
+    const utilization =
+      user.balance > 0 ? (marginUsed / user.balance) * 100 : 0;
+
+    return {
+      available: user.balance,
+      marginUsed,
+      utilization,
+    };
+  }
 
   async getWatchlist(userId: string | undefined): Promise<any> {
     return await this.watchlistRepository.getByUserId(userId);
@@ -430,6 +477,15 @@ export class UserService implements IUserService {
       stocksymbol
     );
   }
+  async RemoveStockFromWathclist(
+    userId: string | undefined,
+    stocksymbol: string
+  ): Promise<IWatchlist | null> {
+    return this.watchlistRepository.removeStockFromWatchlist(
+      userId,
+      stocksymbol
+    );
+  }
   async getStockData(symbol: string | undefined): Promise<any> {
     const stockData = await this.stockRepository.getStockData(symbol);
     const formattedData = stockData.map((stock) => ({
@@ -442,6 +498,7 @@ export class UserService implements IUserService {
     }));
     return formattedData;
   }
+
   async getHistorical(symbol: string | undefined): Promise<any> {
     const stockData = await this.stockRepository.getStockData(symbol);
     return stockData;

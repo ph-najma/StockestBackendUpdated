@@ -32,4 +32,8 @@ export interface IUserController {
   getSignedUrl(req: Request, res: Response): Promise<void>;
   getNotifications(req: Request, res: Response): Promise<void>;
   checkPortfolio(req: Request, res: Response): Promise<void>;
+  getMoneyDetails(req: Request, res: Response): Promise<void>;
+  removeStockFromWathclist(req: Request, res: Response): Promise<void>;
+  uploadFile(req: Request, res: Response): Promise<void>;
+  getAuthParams(req: Request, res: Response): void;
 }

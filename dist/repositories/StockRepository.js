@@ -95,5 +95,10 @@ class StockRepository {
             return stock.save();
         });
     }
+    findBySymbol(symbol) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.stockModel.findOne({ symbol }).lean();
+        });
+    }
 }
 exports.StockRepository = StockRepository;

@@ -44,7 +44,7 @@ const watchlistSchema = new mongoose_1.Schema({
     },
     stocks: [
         {
-            symbol: { type: String, required: true },
+            symbol: { type: String },
             addedAt: { type: Date, default: Date.now },
         },
     ],

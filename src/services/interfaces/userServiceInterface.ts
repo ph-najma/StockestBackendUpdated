@@ -84,4 +84,15 @@ export interface IUserService {
   refreshToken(refreshToken: string): Promise<string>;
   getNotifications(userId: string | undefined): Promise<INotification[] | null>;
   handleGoogleLogin(profile: any): Promise<IUser>;
+  getMoneyDetails(userId: string | undefined): Promise<any>;
+  RemoveStockFromWathclist(
+    userId: string | undefined,
+    stocksymbol: string
+  ): Promise<IWatchlist | null>;
+  getAuthParams(): Promise<any>;
+  uploadImage(fileBuffer: Buffer, fileName: string): Promise<any>;
+  updateProfilePhoto(
+    userId: string | undefined,
+    profileImageUrl: string
+  ): Promise<IUser | null>;
 }

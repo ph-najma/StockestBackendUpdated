@@ -1,6 +1,7 @@
 import { IWatchlist } from "../models/interfaces/watchlistInterface";
 import { IWatchlistRepository } from "./interfaces/watchlistRepoInterface";
 import { Model } from "mongoose";
+
 export class WatchlistRepostory implements IWatchlistRepository {
   constructor(private watchlistModel: Model<IWatchlist>) {}
   async getByUserId(userId: string | undefined): Promise<IWatchlist | null> {
@@ -12,6 +13,7 @@ export class WatchlistRepostory implements IWatchlistRepository {
     // Fetch the watchlist
     const watchlist = await this.watchlistModel
       .findOne({ user: userId })
+      .populate("stocks") // 👈 populates stock details from Stock model
       .lean();
     if (!watchlist) {
       return null;
@@ -31,7 +33,7 @@ export class WatchlistRepostory implements IWatchlistRepository {
 
     if (watchlist) {
       const stockExists = watchlist.stocks.some(
-        (stock: any) => stock.symbol === stockSymbol
+        (s: any) => s.symbol.toString() === stockSymbol.toString()
       );
 
       if (!stockExists) {
@@ -45,6 +47,37 @@ export class WatchlistRepostory implements IWatchlistRepository {
       });
       await watchlist.save();
     }
+
+    return watchlist;
+  }
+  async removeStockFromWatchlist(
+    userId: string | undefined,
+    stockSymbol: string
+  ): Promise<IWatchlist | null> {
+    if (!userId) {
+      throw new Error("User ID is required.");
+    }
+
+    // Find user's watchlist
+    const watchlist = await this.watchlistModel.findOne({ user: userId });
+    if (!watchlist) {
+      throw new Error("Watchlist not found.");
+    }
+
+    console.log("Watchlist stocks before removal:", watchlist.stocks);
+    console.log("Trying to remove symbol:", stockSymbol);
+
+    // ✅ FIX: use `symbol`, not `stock`
+    const updatedStocks = watchlist.stocks.filter(
+      (s: any) => s.symbol !== stockSymbol
+    );
+
+    if (updatedStocks.length === watchlist.stocks.length) {
+      throw new Error(`Stock ${stockSymbol} not found in watchlist.`);
+    }
+
+    watchlist.stocks = updatedStocks;
+    await watchlist.save();
 
     return watchlist;
   }

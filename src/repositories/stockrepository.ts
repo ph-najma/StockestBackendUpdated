@@ -69,4 +69,7 @@ export class StockRepository implements IStockRepository {
   async save(stock: any) {
     return stock.save();
   }
+  async findBySymbol(symbol: string): Promise<IStock | null> {
+    return await this.stockModel.findOne({ symbol }).lean();
+  }
 }

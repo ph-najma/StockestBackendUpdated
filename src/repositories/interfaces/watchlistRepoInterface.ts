@@ -5,4 +5,8 @@ export interface IWatchlistRepository {
     userId: string | undefined,
     stockId: string
   ): Promise<IWatchlist>;
+  removeStockFromWatchlist(
+    userId: string | undefined,
+    stockSymbol: string
+  ): Promise<IWatchlist | null>;
 }

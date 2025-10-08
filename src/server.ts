@@ -3,14 +3,6 @@ import http from "http";
 import app from "./app";
 import { v4 as uuidv4 } from "uuid";
 import jwt from "jsonwebtoken";
-import { StockRepository } from "./repositories/stockRepository";
-import { UserRepository } from "./repositories/userRepository";
-import { TransactionRepository } from "./repositories/transactionRepository";
-import { OrderRepository } from "./repositories/orderRepository";
-import { PromotionRepository } from "./repositories/promotionRepository";
-import { WatchlistRepostory } from "./repositories/watchlistRepsoitory";
-import { NotificationRepository } from "./repositories/notificationRepository";
-import { SessionRepository } from "./repositories/sessionRepository";
 import { IUserService } from "./services/interfaces/userServiceInterface";
 import { UserService } from "./services/userService";
 import orderModel from "./models/orderModel";
@@ -24,34 +16,25 @@ import transactionModel from "./models/transactionModel";
 import User from "./models/userModel";
 import dotenv from "dotenv";
 dotenv.config();
-const userRepository = new UserRepository(userModel);
-const stockRepository = new StockRepository(stockModel);
-const transactionRepository = new TransactionRepository(transactionModel);
-const orderRepository = new OrderRepository(orderModel);
-const promotionRepository = new PromotionRepository(promotionModel);
-const watchlistRepository = new WatchlistRepostory(watchlistModel);
-const sessionRepsoitory = new SessionRepository(sessionModel);
-const notificationRepository = new NotificationRepository(notificationModel);
-const stockrepository = new StockRepository(stockModel);
+// Repositories are composed in dependencyInjection; we avoid duplicating here
 const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:4200",
+    origin: "http://localhost:4200",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   },
 });
 
-const userService: IUserService = new UserService(
-  stockRepository,
-  userRepository,
-  transactionRepository,
-  orderRepository,
-  promotionRepository,
-  watchlistRepository,
-  sessionRepsoitory,
-  notificationRepository
-);
+// Use the same composition as DI for consistency
+import {
+  userService,
+  setIo,
+  stockRepository as diStockRepository,
+} from "./dependencyInjection";
+
+// 🔹 Inject the Socket.IO instance into dependency injection
+setIo(io);
 
 // 🔹 Handle client connection for Socket.IO
 io.on("connection", async (socket) => {
@@ -105,7 +88,7 @@ io.on("connection", async (socket) => {
     // 🔹 Fetch stock updates every 5 seconds
     const stockUpdateInterval = setInterval(async () => {
       try {
-        const liveStockData = await stockrepository.getAllStocks();
+        const liveStockData = await diStockRepository.getAllStocks();
         socket.emit("stockUpdate", liveStockData);
       } catch (error) {
         console.error("Error fetching stock data:", error);
@@ -118,7 +101,7 @@ io.on("connection", async (socket) => {
 
       const watchlistInterval = setInterval(async () => {
         try {
-          const allStocks = await stockrepository.getAllStocks();
+          const allStocks = await diStockRepository.getAllStocks();
           const watchlistStocks = allStocks.filter((stock) =>
             watchlist.includes(stock.symbol)
           );

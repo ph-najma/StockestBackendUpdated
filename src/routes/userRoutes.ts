@@ -4,6 +4,8 @@ import { verifyTokenWithRole } from "../middleware/auth";
 import { userController } from "../dependencyInjection";
 import { paymentController } from "../dependencyInjection";
 const router: Router = express.Router();
+import multer from "multer";
+const upload = multer();
 
 // User authentication routes
 router.post("/signup", userController.signup);
@@ -27,6 +29,11 @@ router.get(
   verifyTokenWithRole("user"),
   userController.getUserportfolio
 );
+router.get(
+  "/getMoneyDetails",
+  verifyTokenWithRole("user"),
+  userController.getMoneyDetails
+);
 router.post("/checkPortfolio", userController.checkPortfolio);
 router.get(
   "/transactions",
@@ -43,6 +50,11 @@ router.post(
   "/ensureAndAddStock",
   verifyTokenWithRole("user"),
   userController.ensureWatchlistAndAddStock
+);
+router.post(
+  "/removeStockFromWatchlist",
+  verifyTokenWithRole("user"),
+  userController.removeStockFromWathclist
 );
 
 router.get(
@@ -105,7 +117,17 @@ router.get(
   verifyTokenWithRole("user"),
   userController.getSignedUrl
 );
-
+router.get(
+  "/imagekit/auth",
+  verifyTokenWithRole("user"),
+  userController.getAuthParams
+);
+router.post(
+  "/upload",
+  upload.single("file"),
+  verifyTokenWithRole("user"),
+  userController.uploadFile
+);
 router.post(
   "/update-profile",
   verifyTokenWithRole("user"),
