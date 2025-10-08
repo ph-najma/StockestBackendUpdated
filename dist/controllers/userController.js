@@ -388,7 +388,9 @@ class UserController {
             }
             try {
                 const genAI = new generative_ai_1.GoogleGenerativeAI(apiKey);
-                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                const model = genAI.getGenerativeModel({
+                    model: "gemini-1.5-flash-latest",
+                });
                 const result = yield model.generateContent(prompt);
                 res.json({ response: result.response.text() });
             }
