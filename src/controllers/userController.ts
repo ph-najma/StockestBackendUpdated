@@ -749,8 +749,13 @@ export class UserController implements IUserController {
 
     try {
       const genAI = new GoogleGenerativeAI(apiKey as string);
-      const modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash-latest";
-      const model = genAI.getGenerativeModel({ model: modelName });
+      const configuredModel =
+        process.env.GEMINI_MODEL || "gemini-1.5-flash-latest";
+      const resolvedModel = /-latest$/.test(configuredModel)
+        ? configuredModel
+        : `${configuredModel}-latest`;
+      console.log("[Gemini] Using model:", resolvedModel);
+      const model = genAI.getGenerativeModel({ model: resolvedModel });
       const result = await model.generateContent(prompt);
       const text = result?.response?.text?.() ?? "No response from model.";
 

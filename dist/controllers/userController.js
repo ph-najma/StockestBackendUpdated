@@ -389,8 +389,12 @@ class UserController {
             }
             try {
                 const genAI = new generative_ai_1.GoogleGenerativeAI(apiKey);
-                const modelName = process.env.GEMINI_MODEL || "gemini-1.5-flash-latest";
-                const model = genAI.getGenerativeModel({ model: modelName });
+                const configuredModel = process.env.GEMINI_MODEL || "gemini-1.5-flash-latest";
+                const resolvedModel = /-latest$/.test(configuredModel)
+                    ? configuredModel
+                    : `${configuredModel}-latest`;
+                console.log("[Gemini] Using model:", resolvedModel);
+                const model = genAI.getGenerativeModel({ model: resolvedModel });
                 const result = yield model.generateContent(prompt);
                 const text = (_c = (_b = (_a = result === null || result === void 0 ? void 0 : result.response) === null || _a === void 0 ? void 0 : _a.text) === null || _b === void 0 ? void 0 : _b.call(_a)) !== null && _c !== void 0 ? _c : "No response from model.";
                 res.json({
