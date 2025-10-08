@@ -749,8 +749,7 @@ export class UserController implements IUserController {
 
     try {
       const genAI = new GoogleGenerativeAI(apiKey as string);
-      const configuredModel =
-        process.env.GEMINI_MODEL || "gemini-1.5-flash-latest";
+      const configuredModel = process.env.GEMINI_MODEL || "gemini-1.5-flash";
       const resolvedModel = /-latest$/.test(configuredModel)
         ? configuredModel
         : `${configuredModel}-latest`;
