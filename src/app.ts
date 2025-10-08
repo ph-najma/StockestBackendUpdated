@@ -65,7 +65,7 @@ app.use(passport.session());
 
 app.use(
   cors({
-    origin: ["http://localhost:4200"],
+    origin: process.env.FRONTEND_URL,
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
