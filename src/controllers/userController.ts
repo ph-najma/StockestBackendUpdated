@@ -749,11 +749,14 @@ export class UserController implements IUserController {
 
     try {
       const genAI = new GoogleGenerativeAI(apiKey as string);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
-
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       const result = await model.generateContent(prompt);
+      const text = result?.response?.text?.() ?? "No response from model.";
 
-      res.json({ response: result.response.text() });
+      res.json({
+        success: true,
+        response: text,
+      });
     } catch (error: any) {
       sendResponse(
         res,
