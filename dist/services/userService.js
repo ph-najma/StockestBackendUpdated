@@ -24,6 +24,84 @@ const helper_1 = require("../helper/helper");
 dotenv_1.default.config();
 const otpStore = new Map();
 class UserService {
+    toUserDto(user) {
+        return {
+            id: user._id.toString(),
+            name: user.name || "",
+            email: user.email || "",
+            balance: user.balance,
+            role: user.role,
+        };
+    }
+    toStockDto(stock) {
+        var _a, _b, _c;
+        return {
+            id: (_c = (_b = (_a = stock._id) === null || _a === void 0 ? void 0 : _a.toString) === null || _b === void 0 ? void 0 : _b.call(_a)) !== null && _c !== void 0 ? _c : "",
+            symbol: stock.symbol,
+            name: stock.name,
+            price: stock.price,
+        };
+    }
+    toOrderDto(order) {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+        return {
+            id: (_c = (_b = (_a = order._id) === null || _a === void 0 ? void 0 : _a.toString) === null || _b === void 0 ? void 0 : _b.call(_a)) !== null && _c !== void 0 ? _c : "",
+            userId: (_f = (_e = (_d = order.user) === null || _d === void 0 ? void 0 : _d.toString) === null || _e === void 0 ? void 0 : _e.call(_d)) !== null && _f !== void 0 ? _f : "",
+            stock: order.stock && typeof order.stock === "object"
+                ? this.toStockDto(order.stock)
+                : order.stock,
+            type: order.type,
+            orderType: order.orderType,
+            quantity: order.quantity,
+            price: order.price,
+            status: order.status,
+            createdAt: (_j = (_h = (_g = order.createdAt) === null || _g === void 0 ? void 0 : _g.toISOString) === null || _h === void 0 ? void 0 : _h.call(_g)) !== null && _j !== void 0 ? _j : new Date().toISOString(),
+        };
+    }
+    toTransactionDto(tx) {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+        return {
+            id: (_c = (_b = (_a = tx._id) === null || _a === void 0 ? void 0 : _a.toString) === null || _b === void 0 ? void 0 : _b.call(_a)) !== null && _c !== void 0 ? _c : "",
+            userId: (_f = (_e = (_d = tx.user) === null || _d === void 0 ? void 0 : _d.toString) === null || _e === void 0 ? void 0 : _e.call(_d)) !== null && _f !== void 0 ? _f : "",
+            amount: tx.price * tx.quantity,
+            type: tx.type,
+            createdAt: (_j = (_h = (_g = tx.createdAt) === null || _g === void 0 ? void 0 : _g.toISOString) === null || _h === void 0 ? void 0 : _h.call(_g)) !== null && _j !== void 0 ? _j : new Date().toISOString(),
+        };
+    }
+    toSessionDto(session) {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+        return {
+            id: (_c = (_b = (_a = session._id) === null || _a === void 0 ? void 0 : _a.toString) === null || _b === void 0 ? void 0 : _b.call(_a)) !== null && _c !== void 0 ? _c : "",
+            title: session.title,
+            instructorId: (_f = (_e = (_d = session.instructorId) === null || _d === void 0 ? void 0 : _d.toString) === null || _e === void 0 ? void 0 : _e.call(_d)) !== null && _f !== void 0 ? _f : "",
+            scheduledAt: (_j = (_h = (_g = session.scheduledAt) === null || _g === void 0 ? void 0 : _g.toISOString) === null || _h === void 0 ? void 0 : _h.call(_g)) !== null && _j !== void 0 ? _j : new Date().toISOString(),
+        };
+    }
+    toNotificationDto(n) {
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+        return {
+            id: (_c = (_b = (_a = n._id) === null || _a === void 0 ? void 0 : _a.toString) === null || _b === void 0 ? void 0 : _b.call(_a)) !== null && _c !== void 0 ? _c : "",
+            userId: (_f = (_e = (_d = n.userId) === null || _d === void 0 ? void 0 : _d.toString) === null || _e === void 0 ? void 0 : _e.call(_d)) !== null && _f !== void 0 ? _f : "",
+            title: n.title,
+            body: n.body,
+            createdAt: (_j = (_h = (_g = n.createdAt) === null || _g === void 0 ? void 0 : _g.toISOString) === null || _h === void 0 ? void 0 : _h.call(_g)) !== null && _j !== void 0 ? _j : new Date().toISOString(),
+        };
+    }
+    toPromotionDto(p) {
+        var _a, _b, _c;
+        return {
+            id: (_c = (_b = (_a = p._id) === null || _a === void 0 ? void 0 : _a.toString) === null || _b === void 0 ? void 0 : _b.call(_a)) !== null && _c !== void 0 ? _c : "",
+            title: p.title,
+            description: p.description,
+        };
+    }
+    toWatchlistItemDto(item) {
+        var _a, _b, _c, _d, _e;
+        return {
+            id: (_c = (_b = (_a = item._id) === null || _a === void 0 ? void 0 : _a.toString) === null || _b === void 0 ? void 0 : _b.call(_a)) !== null && _c !== void 0 ? _c : "",
+            symbol: (_e = (_d = item.symbol) !== null && _d !== void 0 ? _d : item.stocksymbol) !== null && _e !== void 0 ? _e : "",
+        };
+    }
     constructor(stockRepository, userRepository, transactionRepository, orderRepository, promotionRepository, watchlistRepsoitory, sessionRepository, notificationRepository, uploadRepository) {
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
@@ -62,7 +140,7 @@ class UserService {
             const updated = yield this.userRepository.updateById(userId, {
                 profilePhoto: profileImageUrl,
             });
-            return updated;
+            return updated ? this.toUserDto(updated) : null;
         });
     }
     // Verify OTP
@@ -168,7 +246,7 @@ class UserService {
             yield this.userRepository.updateById(user._id.toString(), {
                 refreshToken: refreshToken,
             });
-            return { token, refreshToken, user };
+            return { token, refreshToken, user: this.toUserDto(user) };
         });
     }
     // Forgot password
@@ -210,21 +288,26 @@ class UserService {
             if (!user) {
                 throw new Error("user not found");
             }
-            return user;
+            return this.toUserDto(user);
         });
     }
     //Get User Portfolio
     getUserPortfolio(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.userRepository.findById(userId);
+            const user = yield this.userRepository.findById(userId);
+            return user ? this.toUserDto(user) : null;
         });
     }
     getUpdatedPortfolio(user) {
         return __awaiter(this, void 0, void 0, function* () {
+            const fullUser = yield this.userRepository.findById(user.id);
+            if (!fullUser) {
+                throw new Error("user not found");
+            }
             let totalPortfolioValue = 0;
             let overallProfit = 0;
             let todaysProfit = 0;
-            const updatedPortfolio = yield Promise.all(user.portfolio.map((item) => __awaiter(this, void 0, void 0, function* () {
+            const updatedPortfolio = yield Promise.all(fullUser.portfolio.map((item) => __awaiter(this, void 0, void 0, function* () {
                 const stock = yield this.getStockById(item.stockId instanceof mongoose_1.default.Types.ObjectId
                     ? item.stockId.toString()
                     : item.stockId);
@@ -249,7 +332,8 @@ class UserService {
     //Get All Stocks
     getAllStocks() {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.stockRepository.getAllStocks();
+            const stocks = yield this.stockRepository.getAllStocks();
+            return stocks.map((s) => this.toStockDto(s));
         });
     }
     checkPortfolio(userId, stockId, quantity, type) {
@@ -285,7 +369,7 @@ class UserService {
                     profilePhoto: (_d = (_c = profile.photos) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.value,
                 });
             }
-            return user;
+            return this.toUserDto(user);
         });
     }
     //Place an Order
@@ -302,20 +386,21 @@ class UserService {
                 isIntraday,
             };
             const order = yield this.orderRepository.create(orderData);
-            return order;
+            return order ? this.toOrderDto(order) : null;
         });
     }
     //Get Transactions of a user
     getTransactions(userId, skip, limit) {
         return __awaiter(this, void 0, void 0, function* () {
             const transactions = yield this.transactionRepository.getTransactions(userId, skip, limit);
-            return transactions;
+            return transactions.map((t) => this.toTransactionDto(t));
         });
     }
     //Get Stock By ID
     getStockById(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.stockRepository.getStockById(userId);
+            const stock = yield this.stockRepository.getStockById(userId);
+            return stock ? this.toStockDto(stock) : null;
         });
     }
     //Get Money details
@@ -343,13 +428,15 @@ class UserService {
     }
     getWatchlist(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.watchlistRepository.getByUserId(userId);
+            const items = yield this.watchlistRepository.getByUserId(userId);
+            return items.map((i) => this.toWatchlistItemDto(i));
         });
     }
     //Update User Portfolio After Sell
     updatePortfolioAfterSell(userId, stockId, quantityToSell) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.userRepository.updatePortfolioAfterSell(userId, stockId, quantityToSell);
+            const updated = yield this.userRepository.updatePortfolioAfterSell(userId, stockId, quantityToSell);
+            return updated ? this.toUserDto(updated) : null;
         });
     }
     getMarketPrice(symbol) {
@@ -359,12 +446,14 @@ class UserService {
     }
     ensureWatchlistAndAddStock(userId, stocksymbol) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.watchlistRepository.ensureWatchlistAndAddStock(userId, stocksymbol);
+            const item = yield this.watchlistRepository.ensureWatchlistAndAddStock(userId, stocksymbol);
+            return this.toWatchlistItemDto(item);
         });
     }
     RemoveStockFromWathclist(userId, stocksymbol) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.watchlistRepository.removeStockFromWatchlist(userId, stocksymbol);
+            const removed = yield this.watchlistRepository.removeStockFromWatchlist(userId, stocksymbol);
+            return removed ? this.toWatchlistItemDto(removed) : null;
         });
     }
     getStockData(symbol) {
@@ -399,14 +488,14 @@ class UserService {
     getOrders(userId, skip, limit) {
         return __awaiter(this, void 0, void 0, function* () {
             const orders = yield this.orderRepository.findOrders(userId, skip, limit);
-            return orders;
+            return orders ? orders.map((o) => this.toOrderDto(o)) : null;
         });
     }
     getUserProfileWithRewards(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const promo = yield this.promotionRepository.findPromotion();
-                return promo;
+                return promo ? this.toPromotionDto(promo) : null;
             }
             catch (error) {
                 throw error;
@@ -503,7 +592,7 @@ class UserService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const sessionData = yield this.sessionRepository.getActiveSessions();
-                return sessionData;
+                return sessionData ? sessionData.map((s) => this.toSessionDto(s)) : null;
             }
             catch (error) {
                 throw error;
@@ -513,12 +602,12 @@ class UserService {
     getAssignedSession(instructorId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const instructorData = yield this.getUserProfile(instructorId);
-                const email = instructorData === null || instructorData === void 0 ? void 0 : instructorData.email;
+                const instructorData = yield this.userRepository.findById(instructorId);
+                const email = (instructorData === null || instructorData === void 0 ? void 0 : instructorData.email) || undefined;
                 console.log(email);
                 const sessionData = yield this.sessionRepository.getAssigned(email);
                 console.log(sessionData);
-                return sessionData;
+                return sessionData ? sessionData.map((s) => this.toSessionDto(s)) : null;
             }
             catch (error) {
                 throw error;
@@ -529,7 +618,7 @@ class UserService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const sessionData = yield this.sessionRepository.getPurchased(userId);
-                return sessionData;
+                return sessionData ? sessionData.map((s) => this.toSessionDto(s)) : null;
             }
             catch (error) {
                 throw error;
@@ -538,7 +627,8 @@ class UserService {
     }
     getBySearch(query) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.stockRepository.searchStocks(query);
+            const results = yield this.stockRepository.searchStocks(query);
+            return results.map((s) => this.toStockDto(s));
         });
     }
     countOrders(userId) {
@@ -567,7 +657,10 @@ class UserService {
     }
     getNotifications(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.notificationRepository.getNotifications(userId);
+            const notifications = yield this.notificationRepository.getNotifications(userId);
+            return notifications
+                ? notifications.map((n) => this.toNotificationDto(n))
+                : null;
         });
     }
 }

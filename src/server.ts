@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import jwt from "jsonwebtoken";
 import { IUserService } from "./services/interfaces/userServiceInterface";
 import { UserService } from "./services/userService";
+import { UserDto } from "./interfaces/Interfaces";
 import orderModel from "./models/orderModel";
 import userModel from "./models/userModel";
 import stockModel from "./models/stockModel";
@@ -78,7 +79,14 @@ io.on("connection", async (socket) => {
     // 🔹 Fetch user's portfolio and send updates every 5 seconds
     const portfolioUpdateInterval = setInterval(async () => {
       try {
-        const portfolioData = await userService.getUpdatedPortfolio(user);
+        const userDto: UserDto = {
+          id: user._id.toString(),
+          name: user.name || "",
+          email: user.email || "",
+          balance: user.balance,
+          role: (user as any).role,
+        };
+        const portfolioData = await userService.getUpdatedPortfolio(userDto);
         socket.emit("portfolioSummaryUpdate", portfolioData);
       } catch (error) {
         console.error("❌ Error fetching portfolio data:", error);

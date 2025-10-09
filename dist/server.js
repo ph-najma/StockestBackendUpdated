@@ -65,7 +65,14 @@ io.on("connection", (socket) => __awaiter(void 0, void 0, void 0, function* () {
         // 🔹 Fetch user's portfolio and send updates every 5 seconds
         const portfolioUpdateInterval = setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
             try {
-                const portfolioData = yield dependencyInjection_1.userService.getUpdatedPortfolio(user);
+                const userDto = {
+                    id: user._id.toString(),
+                    name: user.name || "",
+                    email: user.email || "",
+                    balance: user.balance,
+                    role: user.role,
+                };
+                const portfolioData = yield dependencyInjection_1.userService.getUpdatedPortfolio(userDto);
                 socket.emit("portfolioSummaryUpdate", portfolioData);
             }
             catch (error) {

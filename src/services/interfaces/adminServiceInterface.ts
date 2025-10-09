@@ -1,25 +1,28 @@
-import { IUser } from "../../models/interfaces/userInterface";
-import { IAdminDashboardSummary } from "../../interfaces/Interfaces";
-import { IOrder } from "../../models/interfaces/orderInterface";
-import { ILimitOrderQuery } from "../../interfaces/Interfaces";
-import { IStock } from "../../models/interfaces/stockInterface";
-import { ITransaction } from "../../models/interfaces/transactionInterface";
-import { ILimit } from "../../models/interfaces/limitInterface";
+import {
+  IAdminDashboardSummary,
+  OrderDto,
+  StockDto,
+  TransactionDto,
+  SessionDto,
+  UserDto,
+} from "../../interfaces/Interfaces";
 import { ISession } from "../../models/interfaces/sessionInterface";
+import { ILimit } from "../../models/interfaces/limitInterface";
+import { ILimitOrderQuery } from "../../interfaces/Interfaces";
 export interface IAdminService {
   loginAdmin(email: string, password: string): Promise<{ token: string }>;
-  getUserList(): Promise<IUser[]>;
+  getUserList(): Promise<UserDto[]>;
   toggleUserBlockStatus(
     userId: string,
     token?: string
   ): Promise<{ message: string }>;
   getAdminDashboard(): Promise<IAdminDashboardSummary>;
-  getAllOrders(): Promise<IOrder[]>;
-  getLimitOrders(query: ILimitOrderQuery): Promise<IOrder[]>;
-  getMarketOrders(query: ILimitOrderQuery): Promise<IOrder[]>;
-  getCompletedOrders(): Promise<IOrder[]>;
-  getAllStocks(): Promise<IStock[]>;
-  getAllTransactions(): Promise<ITransaction[]>;
+  getAllOrders(): Promise<OrderDto[]>;
+  getLimitOrders(query: ILimitOrderQuery): Promise<OrderDto[]>;
+  getMarketOrders(query: ILimitOrderQuery): Promise<OrderDto[]>;
+  getCompletedOrders(): Promise<OrderDto[]>;
+  getAllStocks(): Promise<StockDto[]>;
+  getAllTransactions(): Promise<TransactionDto[]>;
   getUserPortfolio(userId: string): Promise<{
     user: {
       name: string | undefined;
@@ -27,25 +30,25 @@ export interface IAdminService {
       balance: number;
     };
     portfolio: {
-      stock: IStock | null;
+      stock: StockDto | null;
       quantity: number;
     }[];
   }>;
   getTotalFeesCollected(): Promise<number>;
-  cancelOrder(orderId: string): Promise<IOrder | null>;
+  cancelOrder(orderId: string): Promise<OrderDto | null>;
   updateLimit(limitData: ILimit): Promise<ILimit | null>;
   getLimits(): Promise<ILimit | null>;
   CreatePromotions(data: any): Promise<any>;
-  createSsession(data: ISession): Promise<ISession | null>;
-  getAllSessions(): Promise<ISession[] | null>;
-  getSessionById(sessionId: string): Promise<ISession | null>;
+  createSsession(data: ISession): Promise<SessionDto | null>;
+  getAllSessions(): Promise<SessionDto[] | null>;
+  getSessionById(sessionId: string): Promise<SessionDto | null>;
   updateSessionData(
     sessionId: string,
-    data: Partial<ISession>
-  ): Promise<ISession | null>;
+    data: Partial<SessionDto>
+  ): Promise<SessionDto | null>;
   cancelSession(
     sessionId: string,
     newStatus: "SCHEDULED" | "COMPLETED" | "CANCELED"
-  ): Promise<ISession | null>;
+  ): Promise<SessionDto | null>;
   countUsers(): Promise<number>;
 }

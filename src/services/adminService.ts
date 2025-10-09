@@ -16,7 +16,14 @@ import { IpromotionRepsoitory } from "../repositories/interfaces/promotionRepoIn
 import { IOrderRepository } from "../repositories/interfaces/orderRepoInsterface";
 import { ILimitRepository } from "../repositories/interfaces/baseRepoInterface";
 import { IuserRepsitory } from "../repositories/interfaces/userRepoInterface";
-import { IAdminDashboardSummary } from "../interfaces/Interfaces";
+import {
+  IAdminDashboardSummary,
+  UserDto,
+  OrderDto,
+  StockDto,
+  TransactionDto,
+  SessionDto,
+} from "../interfaces/Interfaces";
 dotenv.config();
 
 const tokenBlacklist = new Set<string>();
@@ -47,6 +54,65 @@ export class AdminService implements IAdminService {
     this.sessionRepository = sessionRepository;
   }
 
+  private toUserDto(user: IUser): UserDto {
+    return {
+      id: user._id.toString(),
+      name: user.name || "",
+      email: user.email || "",
+      balance: user.balance,
+      role: (user as any).role,
+    };
+  }
+
+  private toStockDto(stock: IStock): StockDto {
+    return {
+      id: (stock as any)._id?.toString?.() ?? "",
+      symbol: (stock as any).symbol,
+      name: (stock as any).name,
+      price: (stock as any).price,
+    };
+  }
+
+  private toOrderDto(order: IOrder): OrderDto {
+    return {
+      id: (order as any)._id?.toString?.() ?? "",
+      userId: (order as any).user?.toString?.() ?? "",
+      stock:
+        (order as any).stock && typeof (order as any).stock === "object"
+          ? this.toStockDto((order as any).stock as any)
+          : (order as any).stock,
+      type: (order as any).type,
+      orderType: (order as any).orderType,
+      quantity: (order as any).quantity,
+      price: (order as any).price,
+      status: (order as any).status,
+      createdAt:
+        (order as any).createdAt?.toISOString?.() ?? new Date().toISOString(),
+    };
+  }
+
+  private toTransactionDto(tx: ITransaction): TransactionDto {
+    return {
+      id: (tx as any)._id?.toString?.() ?? "",
+      userId: (tx as any).user?.toString?.() ?? "",
+      amount: (tx as any).price * (tx as any).quantity,
+      type: (tx as any).type,
+      createdAt:
+        (tx as any).createdAt?.toISOString?.() ?? new Date().toISOString(),
+    };
+  }
+
+  private toSessionDto(session: ISession): SessionDto {
+    return {
+      id: (session as any)._id?.toString?.() ?? "",
+      title: (session as any).title,
+      instructorId: (session as any).instructorId?.toString?.() ?? "",
+      scheduledAt:
+        (session as any).scheduledAt?.toISOString?.() ??
+        new Date().toISOString(),
+    };
+  }
+
   // Admin Login
   async loginAdmin(
     email: string,
@@ -72,15 +138,20 @@ export class AdminService implements IAdminService {
   }
 
   // Get User List
-  async getUserList(): Promise<IUser[]> {
-    return await this.userRepository.findAllUsers();
+  async getUserList(): Promise<UserDto[]> {
+    const users = await this.userRepository.findAllUsers();
+    return users.map((u) => this.toUserDto(u));
   }
 
   async getAdminDashboard(): Promise<IAdminDashboardSummary> {
     const totalUsers = await this.userRepository.countUser();
     const sessions = await this.getAllSessions();
-    const completed = sessions?.filter((s) => s.status === "COMPLETED").length;
-    const canceled = sessions?.filter((s) => s.status === "CANCELED").length;
+    const completed = (sessions as any)?.filter(
+      (s: any) => s.status === "COMPLETED"
+    ).length;
+    const canceled = (sessions as any)?.filter(
+      (s: any) => s.status === "CANCELED"
+    ).length;
 
     const transactions = await this.transactionRepository.getAllTransactions();
     const tradingVolume = transactions.reduce(
@@ -129,35 +200,41 @@ export class AdminService implements IAdminService {
     return await this.userRepository.countUser();
   }
   //Get All Orders
-  async getAllOrders(): Promise<IOrder[]> {
-    return this.orderRepository.getAllOrders();
+  async getAllOrders(): Promise<OrderDto[]> {
+    const orders = await this.orderRepository.getAllOrders();
+    return orders.map((o) => this.toOrderDto(o));
   }
   //Get Limit Orders
 
-  async getLimitOrders(query: ILimitOrderQuery) {
+  async getLimitOrders(query: ILimitOrderQuery): Promise<OrderDto[]> {
     query.orderType = "LIMIT";
-    return this.orderRepository.findOrdersByType(query);
+    const orders = await this.orderRepository.findOrdersByType(query);
+    return orders.map((o) => this.toOrderDto(o));
   }
   //Get Market Orders
 
-  async getMarketOrders(query: ILimitOrderQuery) {
+  async getMarketOrders(query: ILimitOrderQuery): Promise<OrderDto[]> {
     query.orderType = "MARKET";
-    return this.orderRepository.findOrdersByType(query);
+    const orders = await this.orderRepository.findOrdersByType(query);
+    return orders.map((o) => this.toOrderDto(o));
   }
   //Get Completed Orders
 
-  async getCompletedOrders(): Promise<IOrder[]> {
-    return this.orderRepository.findCompletedOrders();
+  async getCompletedOrders(): Promise<OrderDto[]> {
+    const orders = await this.orderRepository.findCompletedOrders();
+    return orders.map((o) => this.toOrderDto(o));
   }
 
   //Get All Stocks
-  async getAllStocks(): Promise<IStock[]> {
-    return this.stockRepository.getAllStocks();
+  async getAllStocks(): Promise<StockDto[]> {
+    const stocks = await this.stockRepository.getAllStocks();
+    return stocks.map((s) => this.toStockDto(s));
   }
 
   //Get All Transactiosn
-  async getAllTransactions(): Promise<ITransaction[]> {
-    return this.transactionRepository.getAllTransactions();
+  async getAllTransactions(): Promise<TransactionDto[]> {
+    const txs = await this.transactionRepository.getAllTransactions();
+    return txs.map((t) => this.toTransactionDto(t));
   }
 
   //Get UserPortfolio
@@ -176,7 +253,7 @@ export class AdminService implements IAdminService {
         const stockId = item.stockId; // Convert ObjectId to string
         const stock = await this.stockRepository.getStockById(stockId);
         return {
-          stock,
+          stock: stock ? this.toStockDto(stock) : null,
           quantity: item.quantity,
         };
       })
@@ -196,8 +273,9 @@ export class AdminService implements IAdminService {
   }
 
   // Cancel Order
-  async cancelOrder(orderId: string): Promise<IOrder | null> {
-    return this.orderRepository.cancelOrder(orderId);
+  async cancelOrder(orderId: string): Promise<OrderDto | null> {
+    const order = await this.orderRepository.cancelOrder(orderId);
+    return order ? this.toOrderDto(order) : null;
   }
 
   //Update the Limits
@@ -213,30 +291,33 @@ export class AdminService implements IAdminService {
     return await this.promotionRepository.createPromotion(data);
   }
 
-  async createSsession(data: ISession): Promise<ISession | null> {
+  async createSsession(data: ISession): Promise<SessionDto | null> {
     const session = await this.sessionRepository.createSession(data);
-
-    return session;
+    return session ? this.toSessionDto(session) : null;
   }
-  async getAllSessions(): Promise<ISession[] | null> {
-    return await this.sessionRepository.getAllSessions();
+  async getAllSessions(): Promise<SessionDto[] | null> {
+    const sessions = await this.sessionRepository.getAllSessions();
+    return sessions ? sessions.map((s) => this.toSessionDto(s)) : null;
   }
-  async getSessionById(sessionId: string): Promise<ISession | null> {
-    return await this.sessionRepository.getSessionById(sessionId);
+  async getSessionById(sessionId: string): Promise<SessionDto | null> {
+    const session = await this.sessionRepository.getSessionById(sessionId);
+    return session ? this.toSessionDto(session) : null;
   }
   async updateSessionData(
     sessionId: string,
     data: Partial<ISession>
-  ): Promise<ISession | null> {
-    return await this.sessionRepository.updateSession(sessionId, data);
+  ): Promise<SessionDto | null> {
+    const session = await this.sessionRepository.updateSession(sessionId, data);
+    return session ? this.toSessionDto(session) : null;
   }
   async cancelSession(
     sessionId: string,
     newStatus: "SCHEDULED" | "COMPLETED" | "CANCELED"
-  ): Promise<ISession | null> {
-    return await this.sessionRepository.updateSessionStatus(
+  ): Promise<SessionDto | null> {
+    const session = await this.sessionRepository.updateSessionStatus(
       sessionId,
       newStatus
     );
+    return session ? this.toSessionDto(session) : null;
   }
 }

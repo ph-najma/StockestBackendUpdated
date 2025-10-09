@@ -22,7 +22,17 @@ import { IUser } from "../models/interfaces/userInterface";
 import { IWatchlist } from "../models/interfaces/watchlistInterface";
 import { ITransaction } from "../models/interfaces/transactionInterface";
 import { IOrder } from "../models/interfaces/orderInterface";
-import { ITradeDiary } from "../interfaces/Interfaces";
+import {
+  ITradeDiary,
+  UserDto,
+  StockDto,
+  OrderDto,
+  TransactionDto,
+  SessionDto,
+  NotificationDto,
+  PromotionDto,
+  WatchlistItemDto,
+} from "../interfaces/Interfaces";
 import { isIOrder } from "../helper/helper";
 import { IUserService } from "./interfaces/userServiceInterface";
 import { IUploadRepository } from "../repositories/interfaces/IUploadRepository";
@@ -33,6 +43,91 @@ dotenv.config();
 const otpStore: Map<string, OtpStoreEntry> = new Map();
 
 export class UserService implements IUserService {
+  private toUserDto(user: IUser): UserDto {
+    return {
+      id: user._id.toString(),
+      name: user.name || "",
+      email: user.email || "",
+      balance: user.balance,
+      role: (user as any).role,
+    };
+  }
+
+  private toStockDto(stock: IStock): StockDto {
+    return {
+      id: (stock as any)._id?.toString?.() ?? "",
+      symbol: (stock as any).symbol,
+      name: (stock as any).name,
+      price: (stock as any).price,
+    };
+  }
+
+  private toOrderDto(order: IOrder): OrderDto {
+    return {
+      id: (order as any)._id?.toString?.() ?? "",
+      userId: (order as any).user?.toString?.() ?? "",
+      stock:
+        (order as any).stock && typeof (order as any).stock === "object"
+          ? this.toStockDto((order as any).stock as any)
+          : (order as any).stock,
+      type: (order as any).type,
+      orderType: (order as any).orderType,
+      quantity: (order as any).quantity,
+      price: (order as any).price,
+      status: (order as any).status,
+      createdAt:
+        (order as any).createdAt?.toISOString?.() ?? new Date().toISOString(),
+    };
+  }
+
+  private toTransactionDto(tx: ITransaction): TransactionDto {
+    return {
+      id: (tx as any)._id?.toString?.() ?? "",
+      userId: (tx as any).user?.toString?.() ?? "",
+      amount: (tx as any).price * (tx as any).quantity,
+      type: (tx as any).type,
+      createdAt:
+        (tx as any).createdAt?.toISOString?.() ?? new Date().toISOString(),
+    };
+  }
+
+  private toSessionDto(session: ISession): SessionDto {
+    return {
+      id: (session as any)._id?.toString?.() ?? "",
+      title: (session as any).title,
+      instructorId: (session as any).instructorId?.toString?.() ?? "",
+      scheduledAt:
+        (session as any).scheduledAt?.toISOString?.() ??
+        new Date().toISOString(),
+    };
+  }
+
+  private toNotificationDto(n: INotification): NotificationDto {
+    return {
+      id: (n as any)._id?.toString?.() ?? "",
+      userId: (n as any).userId?.toString?.() ?? "",
+      title: (n as any).title,
+      body: (n as any).body,
+      createdAt:
+        (n as any).createdAt?.toISOString?.() ?? new Date().toISOString(),
+    };
+  }
+
+  private toPromotionDto(p: IPromotion): PromotionDto {
+    return {
+      id: (p as any)._id?.toString?.() ?? "",
+      title: (p as any).title,
+      description: (p as any).description,
+    };
+  }
+
+  private toWatchlistItemDto(item: IWatchlist): WatchlistItemDto {
+    return {
+      id: (item as any)._id?.toString?.() ?? "",
+      symbol: (item as any).symbol ?? (item as any).stocksymbol ?? "",
+    };
+  }
+
   private userRepository: IuserRepsitory;
   private orderRepository: IOrderRepository;
   private transactionRepository: ITransactionRepository;
@@ -98,12 +193,12 @@ export class UserService implements IUserService {
   async updateProfilePhoto(
     userId: string | undefined,
     profileImageUrl: string
-  ): Promise<IUser | null> {
+  ): Promise<UserDto | null> {
     if (!userId) return null;
     const updated = await this.userRepository.updateById(userId as any, {
       profilePhoto: profileImageUrl,
     });
-    return updated;
+    return updated ? this.toUserDto(updated) : null;
   }
 
   // Verify OTP
@@ -204,7 +299,7 @@ export class UserService implements IUserService {
   async login(
     email: string,
     password: string
-  ): Promise<{ token: string; refreshToken: string; user: IUser }> {
+  ): Promise<{ token: string; refreshToken: string; user: UserDto }> {
     const user = await this.userRepository.findByEmail(email);
     if (!user) {
       throw new Error("No such user");
@@ -229,7 +324,7 @@ export class UserService implements IUserService {
       refreshToken: refreshToken,
     });
 
-    return { token, refreshToken, user };
+    return { token, refreshToken, user: this.toUserDto(user) };
   }
 
   // Forgot password
@@ -276,27 +371,32 @@ export class UserService implements IUserService {
   async home(): Promise<void> {}
 
   //Get User Profle
-  async getUserProfile(userId: string | undefined): Promise<IUser | null> {
+  async getUserProfile(userId: string | undefined): Promise<UserDto | null> {
     const user = await this.userRepository.findById(userId);
 
     if (!user) {
       throw new Error("user not found");
     }
-    return user;
+    return this.toUserDto(user);
   }
 
   //Get User Portfolio
-  async getUserPortfolio(userId: string | undefined): Promise<IUser | null> {
-    return await this.userRepository.findById(userId);
+  async getUserPortfolio(userId: string | undefined): Promise<UserDto | null> {
+    const user = await this.userRepository.findById(userId);
+    return user ? this.toUserDto(user) : null;
   }
 
-  async getUpdatedPortfolio(user: IUser): Promise<any> {
+  async getUpdatedPortfolio(user: UserDto): Promise<any> {
+    const fullUser = await this.userRepository.findById(user.id);
+    if (!fullUser) {
+      throw new Error("user not found");
+    }
     let totalPortfolioValue = 0;
     let overallProfit = 0;
     let todaysProfit = 0;
 
     const updatedPortfolio = await Promise.all(
-      user.portfolio.map(async (item) => {
+      fullUser.portfolio.map(async (item) => {
         const stock = await this.getStockById(
           item.stockId instanceof mongoose.Types.ObjectId
             ? item.stockId.toString()
@@ -304,9 +404,9 @@ export class UserService implements IUserService {
         );
         if (!stock) return item;
 
-        const stockValue = stock.price * item.quantity;
-        const profit = stockValue - stock.open * item.quantity;
-        const todaysChange = stock.changePercent;
+        const stockValue = (stock as any).price * item.quantity;
+        const profit = stockValue - (stock as any).open * item.quantity;
+        const todaysChange = (stock as any).changePercent;
 
         totalPortfolioValue += stockValue;
         overallProfit += profit;
@@ -331,8 +431,9 @@ export class UserService implements IUserService {
   }
 
   //Get All Stocks
-  async getAllStocks() {
-    return this.stockRepository.getAllStocks();
+  async getAllStocks(): Promise<StockDto[]> {
+    const stocks = await this.stockRepository.getAllStocks();
+    return stocks.map((s) => this.toStockDto(s));
   }
   async checkPortfolio(
     userId: string,
@@ -362,7 +463,7 @@ export class UserService implements IUserService {
     return { success: true, message: "Portfolio check passed" };
   }
 
-  async handleGoogleLogin(profile: any): Promise<IUser> {
+  async handleGoogleLogin(profile: any): Promise<UserDto> {
     const email = profile.emails?.[0]?.value;
     if (!email) throw new Error("Email not found in Google profile");
 
@@ -375,7 +476,7 @@ export class UserService implements IUserService {
         profilePhoto: profile.photos?.[0]?.value,
       });
     }
-    return user;
+    return this.toUserDto(user);
   }
 
   //Place an Order
@@ -388,7 +489,7 @@ export class UserService implements IUserService {
     price: number,
     stopPrice: number,
     isIntraday: Boolean | undefined
-  ): Promise<IOrder | null> {
+  ): Promise<OrderDto | null> {
     const orderData: Partial<IOrder> = {
       user,
       stock,
@@ -401,7 +502,7 @@ export class UserService implements IUserService {
     };
 
     const order = await this.orderRepository.create(orderData);
-    return order;
+    return order ? this.toOrderDto(order) : null;
   }
 
   //Get Transactions of a user
@@ -409,18 +510,18 @@ export class UserService implements IUserService {
     userId: string | undefined,
     skip: number,
     limit: number
-  ): Promise<ITransaction[]> {
+  ): Promise<TransactionDto[]> {
     const transactions = await this.transactionRepository.getTransactions(
       userId,
       skip,
       limit
     );
-
-    return transactions;
+    return transactions.map((t) => this.toTransactionDto(t));
   }
   //Get Stock By ID
-  async getStockById(userId: string | undefined): Promise<IStock | null> {
-    return await this.stockRepository.getStockById(userId);
+  async getStockById(userId: string | undefined): Promise<StockDto | null> {
+    const stock = await this.stockRepository.getStockById(userId as any);
+    return stock ? this.toStockDto(stock) : null;
   }
   //Get Money details
   async getMoneyDetails(userId: string | undefined): Promise<any> {
@@ -449,8 +550,11 @@ export class UserService implements IUserService {
     };
   }
 
-  async getWatchlist(userId: string | undefined): Promise<any> {
-    return await this.watchlistRepository.getByUserId(userId);
+  async getWatchlist(userId: string | undefined): Promise<WatchlistItemDto[]> {
+    const items = await this.watchlistRepository.getByUserId(userId);
+    return (items as unknown as any[]).map((i: any) =>
+      this.toWatchlistItemDto(i)
+    );
   }
 
   //Update User Portfolio After Sell
@@ -458,12 +562,13 @@ export class UserService implements IUserService {
     userId: string,
     stockId: string,
     quantityToSell: number
-  ): Promise<IUser | null> {
-    return await this.userRepository.updatePortfolioAfterSell(
+  ): Promise<UserDto | null> {
+    const updated = await this.userRepository.updatePortfolioAfterSell(
       userId,
       stockId,
       quantityToSell
     );
+    return updated ? this.toUserDto(updated) : null;
   }
   async getMarketPrice(symbol: string): Promise<any> {
     return this.stockRepository.getMarketPrice(symbol);
@@ -471,20 +576,22 @@ export class UserService implements IUserService {
   async ensureWatchlistAndAddStock(
     userId: string | undefined,
     stocksymbol: string
-  ): Promise<IWatchlist> {
-    return this.watchlistRepository.ensureWatchlistAndAddStock(
+  ): Promise<WatchlistItemDto> {
+    const item = await this.watchlistRepository.ensureWatchlistAndAddStock(
       userId,
       stocksymbol
     );
+    return this.toWatchlistItemDto(item as any);
   }
   async RemoveStockFromWathclist(
     userId: string | undefined,
     stocksymbol: string
-  ): Promise<IWatchlist | null> {
-    return this.watchlistRepository.removeStockFromWatchlist(
+  ): Promise<WatchlistItemDto | null> {
+    const removed = await this.watchlistRepository.removeStockFromWatchlist(
       userId,
       stocksymbol
     );
+    return removed ? this.toWatchlistItemDto(removed as any) : null;
   }
   async getStockData(symbol: string | undefined): Promise<any> {
     const stockData = await this.stockRepository.getStockData(symbol);
@@ -516,17 +623,16 @@ export class UserService implements IUserService {
     userId: string | undefined,
     skip: number,
     limit: number
-  ): Promise<IOrder[] | null> {
+  ): Promise<OrderDto[] | null> {
     const orders = await this.orderRepository.findOrders(userId, skip, limit);
-    return orders;
+    return orders ? orders.map((o) => this.toOrderDto(o)) : null;
   }
   async getUserProfileWithRewards(
     userId: string | undefined
-  ): Promise<IPromotion | null> {
+  ): Promise<PromotionDto | null> {
     try {
       const promo = await this.promotionRepository.findPromotion();
-
-      return promo;
+      return promo ? this.toPromotionDto(promo) : null;
     } catch (error) {
       throw error;
     }
@@ -629,38 +735,39 @@ export class UserService implements IUserService {
     };
   }
 
-  async getActiveSessions(): Promise<ISession[] | null> {
+  async getActiveSessions(): Promise<SessionDto[] | null> {
     try {
       const sessionData = await this.sessionRepository.getActiveSessions();
-      return sessionData;
+      return sessionData ? sessionData.map((s) => this.toSessionDto(s)) : null;
     } catch (error) {
       throw error;
     }
   }
   async getAssignedSession(
     instructorId: string | undefined
-  ): Promise<ISession[] | null> {
+  ): Promise<SessionDto[] | null> {
     try {
-      const instructorData = await this.getUserProfile(instructorId);
-      const email = instructorData?.email;
+      const instructorData = await this.userRepository.findById(instructorId);
+      const email = instructorData?.email || undefined;
       console.log(email);
       const sessionData = await this.sessionRepository.getAssigned(email);
       console.log(sessionData);
-      return sessionData;
+      return sessionData ? sessionData.map((s) => this.toSessionDto(s)) : null;
     } catch (error) {
       throw error;
     }
   }
-  async getPurchased(userId: string | undefined): Promise<ISession[] | null> {
+  async getPurchased(userId: string | undefined): Promise<SessionDto[] | null> {
     try {
       const sessionData = await this.sessionRepository.getPurchased(userId);
-      return sessionData;
+      return sessionData ? sessionData.map((s) => this.toSessionDto(s)) : null;
     } catch (error) {
       throw error;
     }
   }
-  async getBySearch(query: Partial<IStock>): Promise<IStock[]> {
-    return await this.stockRepository.searchStocks(query);
+  async getBySearch(query: Partial<StockDto>): Promise<StockDto[]> {
+    const results = await this.stockRepository.searchStocks(query as any);
+    return results.map((s) => this.toStockDto(s));
   }
   async countOrders(userId: string | undefined): Promise<number> {
     return await this.orderRepository.countOrdersByUser(userId);
@@ -689,7 +796,12 @@ export class UserService implements IUserService {
   }
   async getNotifications(
     userId: string | undefined
-  ): Promise<INotification[] | null> {
-    return this.notificationRepository.getNotifications(userId);
+  ): Promise<NotificationDto[] | null> {
+    const notifications = await this.notificationRepository.getNotifications(
+      userId
+    );
+    return notifications
+      ? notifications.map((n) => this.toNotificationDto(n))
+      : null;
   }
 }

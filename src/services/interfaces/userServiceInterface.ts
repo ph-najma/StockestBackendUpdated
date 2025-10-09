@@ -1,11 +1,13 @@
-import { IUser } from "../../models/interfaces/userInterface";
-import { IStock } from "../../models/interfaces/stockInterface";
-import { IOrder } from "../../models/interfaces/orderInterface";
-import { ITransaction } from "../../models/interfaces/transactionInterface";
-import { IWatchlist } from "../../models/interfaces/watchlistInterface";
-import { IPromotion } from "../../models/interfaces/promotionInterface";
-import { ISession } from "../../models/interfaces/sessionInterface";
-import { INotification } from "../../models/interfaces/notificationInterface";
+import {
+  UserDto,
+  StockDto,
+  OrderDto,
+  TransactionDto,
+  WatchlistItemDto,
+  PromotionDto,
+  SessionDto,
+  NotificationDto,
+} from "../../interfaces/Interfaces";
 import { ObjectId, Types } from "mongoose";
 
 export interface IUserService {
@@ -21,14 +23,14 @@ export interface IUserService {
   login(
     email: string,
     password: string
-  ): Promise<{ token: string; refreshToken: string; user: IUser }>;
+  ): Promise<{ token: string; refreshToken: string; user: UserDto }>;
   forgotPassword(email: string): Promise<void>;
   resetPassword(email: string, otp: string, newPassword: string): Promise<void>;
   home(): Promise<void>;
-  getUserProfile(userId: string | undefined): Promise<IUser | null>;
-  getUserPortfolio(userId: string | undefined): Promise<IUser | null>;
-  getAllStocks(): Promise<IStock[]>;
-  getStockById(userId: string | undefined): Promise<IStock | null>;
+  getUserProfile(userId: string | undefined): Promise<UserDto | null>;
+  getUserPortfolio(userId: string | undefined): Promise<UserDto | null>;
+  getAllStocks(): Promise<StockDto[]>;
+  getStockById(userId: string | undefined): Promise<StockDto | null>;
   placeOrder(
     user: Types.ObjectId | undefined,
     stock: string,
@@ -38,25 +40,25 @@ export interface IUserService {
     price: number,
     stopPrice: number,
     IsIntraday: Boolean | undefined
-  ): Promise<IOrder | null>;
+  ): Promise<OrderDto | null>;
   getTransactions(
     userId: string | undefined,
     skip: number,
     limit: number
-  ): Promise<ITransaction[]>;
-  getUpdatedPortfolio(user: IUser): Promise<any>;
+  ): Promise<TransactionDto[]>;
+  getUpdatedPortfolio(user: UserDto): Promise<any>;
   updatePortfolioAfterSell(
     userId: string,
     stockId: string,
     quantityToSell: number
-  ): Promise<IUser | null>;
+  ): Promise<UserDto | null>;
   getMarketPrice(symbol: string): Promise<any>;
-  getWatchlist(userId: string | undefined): Promise<any>;
+  getWatchlist(userId: string | undefined): Promise<WatchlistItemDto[]>;
   ensureWatchlistAndAddStock(
     userId: string | undefined,
     stocksymbol: string
-  ): Promise<IWatchlist>;
-  getStockData(symbol: string | undefined): Promise<any>;
+  ): Promise<WatchlistItemDto>;
+  getStockData(symbol: string | undefined): Promise<StockDto | null>;
   getReferralCode(userId: string | undefined): Promise<string | undefined>;
   checkPortfolio(
     userId: string,
@@ -68,31 +70,33 @@ export interface IUserService {
     userId: string | undefined,
     skip: number,
     limit: number
-  ): Promise<IOrder[] | null>;
+  ): Promise<OrderDto[] | null>;
   getUserProfileWithRewards(
     userId: string | undefined
-  ): Promise<IPromotion | null>;
+  ): Promise<PromotionDto | null>;
   getTradeDiary(userId: string | undefined): Promise<any>;
-  getActiveSessions(): Promise<ISession[] | null>;
+  getActiveSessions(): Promise<SessionDto[] | null>;
   getAssignedSession(
     instructorId: string | undefined
-  ): Promise<ISession[] | null>;
-  getPurchased(userId: string | undefined): Promise<ISession[] | null>;
-  getBySearch(query: Partial<IStock>): Promise<IStock[]>;
+  ): Promise<SessionDto[] | null>;
+  getPurchased(userId: string | undefined): Promise<SessionDto[] | null>;
+  getBySearch(query: Partial<StockDto>): Promise<StockDto[]>;
   getHistorical(symbol: string | undefined): Promise<any>;
   countOrders(userId: string | undefined): Promise<number>;
   refreshToken(refreshToken: string): Promise<string>;
-  getNotifications(userId: string | undefined): Promise<INotification[] | null>;
-  handleGoogleLogin(profile: any): Promise<IUser>;
+  getNotifications(
+    userId: string | undefined
+  ): Promise<NotificationDto[] | null>;
+  handleGoogleLogin(profile: any): Promise<UserDto>;
   getMoneyDetails(userId: string | undefined): Promise<any>;
   RemoveStockFromWathclist(
     userId: string | undefined,
     stocksymbol: string
-  ): Promise<IWatchlist | null>;
+  ): Promise<WatchlistItemDto | null>;
   getAuthParams(): Promise<any>;
   uploadImage(fileBuffer: Buffer, fileName: string): Promise<any>;
   updateProfilePhoto(
     userId: string | undefined,
     profileImageUrl: string
-  ): Promise<IUser | null>;
+  ): Promise<UserDto | null>;
 }

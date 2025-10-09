@@ -70,6 +70,68 @@ export enum HttpStatusCode {
   NOT_FOUND = 404,
   INTERNAL_SERVER_ERROR = 500,
 }
+
+// Service/Controller DTOs (decoupled from persistence models)
+export interface UserDto {
+  id: string;
+  name: string;
+  email: string;
+  balance: number;
+  role?: string;
+}
+
+export interface StockDto {
+  id: string;
+  symbol: string;
+  name: string;
+  price: number;
+}
+
+export interface OrderDto {
+  id: string;
+  userId: string;
+  stock: StockDto | string;
+  type: string;
+  orderType: string;
+  quantity: number;
+  price?: number;
+  status: string;
+  createdAt: string;
+}
+
+export interface TransactionDto {
+  id: string;
+  userId: string;
+  amount: number;
+  type: string;
+  createdAt: string;
+}
+
+export interface WatchlistItemDto {
+  id: string;
+  symbol: string;
+}
+
+export interface PromotionDto {
+  id: string;
+  title: string;
+  description?: string;
+}
+
+export interface SessionDto {
+  id: string;
+  title: string;
+  instructorId: string;
+  scheduledAt: string;
+}
+
+export interface NotificationDto {
+  id: string;
+  userId: string;
+  title: string;
+  body: string;
+  createdAt: string;
+}
 export interface ILimitOrderQuery {
   orderType: string;
   status?: string | undefined;
