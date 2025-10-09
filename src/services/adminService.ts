@@ -99,6 +99,13 @@ export class AdminService implements IAdminService {
       type: (tx as any).type,
       createdAt:
         (tx as any).createdAt?.toISOString?.() ?? new Date().toISOString(),
+      stock:
+        (tx as any).stock && typeof (tx as any).stock === "object"
+          ? this.toStockDto((tx as any).stock as any)
+          : (tx as any).stock,
+      quantity: (tx as any).quantity,
+      price: (tx as any).price,
+      status: (tx as any).status,
     };
   }
 

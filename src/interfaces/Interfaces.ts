@@ -105,6 +105,10 @@ export interface TransactionDto {
   amount: number;
   type: string;
   createdAt: string;
+  stock?: StockDto | string;
+  quantity?: number;
+  price?: number;
+  status?: string;
 }
 
 export interface WatchlistItemDto {

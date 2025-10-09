@@ -66,6 +66,12 @@ class UserService {
             amount: tx.price * tx.quantity,
             type: tx.type,
             createdAt: (_j = (_h = (_g = tx.createdAt) === null || _g === void 0 ? void 0 : _g.toISOString) === null || _h === void 0 ? void 0 : _h.call(_g)) !== null && _j !== void 0 ? _j : new Date().toISOString(),
+            stock: tx.stock && typeof tx.stock === "object"
+                ? this.toStockDto(tx.stock)
+                : tx.stock,
+            quantity: tx.quantity,
+            price: tx.price,
+            status: tx.status,
         };
     }
     toSessionDto(session) {
